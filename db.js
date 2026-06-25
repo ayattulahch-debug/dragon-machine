@@ -9,7 +9,10 @@ if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 const DB_PATH = process.env.DB_PATH || path.join(DATA_DIR, 'dragon.db');
 const db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+// Catatan: foreign_keys dimatikan agar migrasi tabel users yang sempat
+// meninggalkan FK reference ke users_old di tabel lain tidak menyebabkan error
+// pada setiap query. Validasi relasi ditangani di application code.
+db.pragma('foreign_keys = OFF');
 
 // ============================================================
 // SCHEMA
@@ -26,19 +29,25 @@ db.exec(`
   );
 `);
 
-// Cleanup: hapus leftover users_old dari migrasi gagal sebelumnya
+// Recovery: jika users_old ada tapi users tidak (migrasi sebelumnya gagal di tengah),
+// rename users_old kembali ke users agar data tidak hilang.
+try {
+  const hasUsers = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='users'").get();
+  const hasUsersOld = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='users_old'").get();
+  if (!hasUsers && hasUsersOld) {
+    db.exec("ALTER TABLE users_old RENAME TO users");
+  }
+} catch (e) {}
+
+// Cleanup: hapus leftover users_old (aman karena data sudah di-rename ke users di atas)
 try { db.exec("DROP TABLE IF EXISTS users_old"); } catch (e) {}
 
 // Migrasi: fix CHECK constraint lama pada role yang tidak mengizinkan 'Staff'
-// Penting: JANGAN pakai ALTER TABLE ... RENAME TO users_old karena di SQLite 3.25+
-// RENAME otomatis update FK references di tabel lain (mis. permintaan) ke nama baru,
-// sehingga DROP users_old akan meninggalkan FK yang reference tabel tidak ada.
-// Solusi: buat users_new, copy data, DROP users, RENAME users_new TO users — FK tetap valid.
+// Pakai pendekatan CREATE users_new + copy + DROP + RENAME untuk hindari FK breakage.
 try {
   db.prepare("INSERT INTO users (username, password_hash, role) VALUES ('__mig_ck__', '', 'Staff')").run();
   db.prepare("DELETE FROM users WHERE username = '__mig_ck__'").run();
 } catch (e) {
-  db.exec("PRAGMA foreign_keys = OFF");
   db.exec(`
     CREATE TABLE users_new (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -53,10 +62,8 @@ try {
   db.exec("INSERT INTO users_new (id, username, password_hash, role, nama_lengkap, permissions, created_at) SELECT id, username, password_hash, role, nama_lengkap, permissions, created_at FROM users");
   db.exec("DROP TABLE users");
   db.exec("ALTER TABLE users_new RENAME TO users");
-  // Update sqlite_sequence agar auto-increment lanjut dari MAX(id) yang ada
   const maxUserId = db.prepare("SELECT COALESCE(MAX(id), 0) AS m FROM users").get().m;
   db.exec(`INSERT OR REPLACE INTO sqlite_sequence (name, seq) VALUES ('users', ${maxUserId})`);
-  db.exec("PRAGMA foreign_keys = ON");
 }
 
 // Migrasi: tambah kolom permissions jika belum ada

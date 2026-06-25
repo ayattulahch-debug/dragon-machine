@@ -66,11 +66,15 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_bk_idtrx ON barang_keluar(id_transaksi);
   CREATE INDEX IF NOT EXISTS idx_bk_idbahan ON barang_keluar(id_bahan);
-  CREATE INDEX IF NOT EXISTS idx_bk_permintaan ON barang_keluar(permintaan_id);
 `);
 
 // Migrasi: tambah kolom permintaan_id di barang_keluar jika belum ada
 try { db.exec("ALTER TABLE barang_keluar ADD COLUMN permintaan_id INTEGER"); } catch (e) { /* sudah ada */ }
+
+// Index dibuat SETELAH ALTER TABLE agar kolom permintaan_id sudah ada
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_bk_permintaan ON barang_keluar(permintaan_id);
+`);
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS permintaan (

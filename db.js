@@ -19,12 +19,35 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
-    role TEXT NOT NULL CHECK(role IN ('Master','Staff','Tamu')),
+    role TEXT NOT NULL,
     nama_lengkap TEXT,
     permissions TEXT DEFAULT '[]',
     created_at TEXT DEFAULT (datetime('now'))
   );
 `);
+
+// Migrasi: fix CHECK constraint lama pada role yang tidak mengizinkan 'Staff'
+try {
+  db.prepare("INSERT INTO users (username, password_hash, role) VALUES ('__mig_ck__', '', 'Staff')").run();
+  db.prepare("DELETE FROM users WHERE username = '__mig_ck__'").run();
+} catch (e) {
+  db.exec("PRAGMA foreign_keys = OFF");
+  db.exec("ALTER TABLE users RENAME TO users_old");
+  db.exec(`
+    CREATE TABLE users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      role TEXT NOT NULL,
+      nama_lengkap TEXT,
+      permissions TEXT DEFAULT '[]',
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+  db.exec("INSERT INTO users (id, username, password_hash, role, nama_lengkap, permissions, created_at) SELECT id, username, password_hash, role, nama_lengkap, permissions, created_at FROM users_old");
+  db.exec("DROP TABLE users_old");
+  db.exec("PRAGMA foreign_keys = ON");
+}
 
 // Migrasi: tambah kolom permissions jika belum ada
 try { db.exec("ALTER TABLE users ADD COLUMN permissions TEXT DEFAULT '[]'"); } catch (e) { /* sudah ada */ }

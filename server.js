@@ -539,6 +539,8 @@ app.post('/api/createUser', authenticate, requireMaster, (req, res) => {
     const args = req.body.args || [];
     const [username, password, role, namaLengkap, permissions] = args;
     if (!username || !password) return res.status(400).json({ error: 'Username dan password wajib.' });
+    const validRoles = ['Master', 'Staff', 'Tamu'];
+    if (role && !validRoles.includes(role)) return res.status(400).json({ error: 'Role tidak valid.' });
     const hash = bcrypt.hashSync(password, 10);
     db.prepare('INSERT INTO users (username, password_hash, role, nama_lengkap, permissions) VALUES (?,?,?,?,?)')
       .run(username, hash, role || 'Tamu', namaLengkap || username, JSON.stringify(permissions || []));
@@ -554,6 +556,8 @@ app.post('/api/updateUser', authenticate, requireMaster, (req, res) => {
     const args = req.body.args || [];
     const [id, username, password, role, namaLengkap, permissions] = args;
     if (!id) return res.status(400).json({ error: 'ID user wajib.' });
+    const validRoles = ['Master', 'Staff', 'Tamu'];
+    if (role && !validRoles.includes(role)) return res.status(400).json({ error: 'Role tidak valid.' });
     if (password) {
       const hash = bcrypt.hashSync(password, 10);
       db.prepare('UPDATE users SET username=?, password_hash=?, role=?, nama_lengkap=?, permissions=? WHERE id=?')

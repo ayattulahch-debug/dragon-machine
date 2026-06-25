@@ -26,15 +26,21 @@ db.exec(`
   );
 `);
 
+// Cleanup: hapus leftover users_old dari migrasi gagal sebelumnya
+try { db.exec("DROP TABLE IF EXISTS users_old"); } catch (e) {}
+
 // Migrasi: fix CHECK constraint lama pada role yang tidak mengizinkan 'Staff'
+// Penting: JANGAN pakai ALTER TABLE ... RENAME TO users_old karena di SQLite 3.25+
+// RENAME otomatis update FK references di tabel lain (mis. permintaan) ke nama baru,
+// sehingga DROP users_old akan meninggalkan FK yang reference tabel tidak ada.
+// Solusi: buat users_new, copy data, DROP users, RENAME users_new TO users — FK tetap valid.
 try {
   db.prepare("INSERT INTO users (username, password_hash, role) VALUES ('__mig_ck__', '', 'Staff')").run();
   db.prepare("DELETE FROM users WHERE username = '__mig_ck__'").run();
 } catch (e) {
   db.exec("PRAGMA foreign_keys = OFF");
-  db.exec("ALTER TABLE users RENAME TO users_old");
   db.exec(`
-    CREATE TABLE users (
+    CREATE TABLE users_new (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
@@ -42,10 +48,14 @@ try {
       nama_lengkap TEXT,
       permissions TEXT DEFAULT '[]',
       created_at TEXT DEFAULT (datetime('now'))
-    );
+    )
   `);
-  db.exec("INSERT INTO users (id, username, password_hash, role, nama_lengkap, permissions, created_at) SELECT id, username, password_hash, role, nama_lengkap, permissions, created_at FROM users_old");
-  db.exec("DROP TABLE users_old");
+  db.exec("INSERT INTO users_new (id, username, password_hash, role, nama_lengkap, permissions, created_at) SELECT id, username, password_hash, role, nama_lengkap, permissions, created_at FROM users");
+  db.exec("DROP TABLE users");
+  db.exec("ALTER TABLE users_new RENAME TO users");
+  // Update sqlite_sequence agar auto-increment lanjut dari MAX(id) yang ada
+  const maxUserId = db.prepare("SELECT COALESCE(MAX(id), 0) AS m FROM users").get().m;
+  db.exec(`INSERT OR REPLACE INTO sqlite_sequence (name, seq) VALUES ('users', ${maxUserId})`);
   db.exec("PRAGMA foreign_keys = ON");
 }
 

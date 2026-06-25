@@ -7,11 +7,10 @@ const jwt        = require('jsonwebtoken');
 const bcrypt     = require('bcryptjs');
 const cloudinary = require('cloudinary').v2;
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'dragon-machine-default-jwt-secret-change-in-production-2026';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
-if (!JWT_SECRET) {
-  console.error('\n FATAL: JWT_SECRET belum diatur di environment variables!\n');
-  process.exit(1);
+if (!process.env.JWT_SECRET) {
+  console.warn('\n WARNING: JWT_SECRET tidak diatur, menggunakan default. Set JWT_SECRET di environment variables untuk production!\n');
 }
 
 cloudinary.config({

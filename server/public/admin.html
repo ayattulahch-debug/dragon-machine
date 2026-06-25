@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQLite Admin - Dragon Machine</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f172a;--surface:#1e293b;--surface2:#334155;--border:#475569;
+  --text:#e2e8f0;--text2:#94a3b8;--primary:#3b82f6;--primary-hover:#2563eb;
+  --danger:#ef4444;--danger-hover:#dc2626;--success:#22c55e;--warning:#f59e0b;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;position:fixed}
+.sidebar h2{padding:20px;font-size:16px;color:var(--primary);border-bottom:1px solid var(--border)}
+.sidebar nav{flex:1;overflow-y:auto;padding:8px}
+.sidebar nav button{display:block;width:100%;text-align:left;padding:10px 16px;background:none;border:none;color:var(--text2);cursor:pointer;border-radius:6px;margin:2px 0;font-size:13px;transition:.15s}
+.sidebar nav button:hover,.sidebar nav button.active{background:var(--surface2);color:var(--text)}
+.sidebar nav button.active{border-left:3px solid var(--primary);color:var(--primary)}
+.sidebar nav .section{font-size:11px;color:var(--text2);padding:12px 16px 4px;text-transform:uppercase;letter-spacing:.5px}
+.main{margin-left:240px;flex:1;padding:24px;min-height:100vh}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.header h1{font-size:22px;font-weight:600}
+.tabs{display:flex;gap:4px;background:var(--surface);padding:4px;border-radius:8px;margin-bottom:20px}
+.tab{padding:8px 16px;border:none;background:none;color:var(--text2);cursor:pointer;border-radius:6px;font-size:13px;transition:.15s}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--primary);color:#fff}
+.toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.toolbar input,.toolbar select{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:13px;outline:none}
+.toolbar input:focus,.toolbar select:focus{border-color:var(--primary)}
+.toolbar input.search{flex:1;min-width:200px}
+.btn{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;transition:.15s}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-hover)}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:var(--danger-hover)}
+.btn-ghost{background:var(--surface2);color:var(--text)}.btn-ghost:hover{background:var(--border)}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#16a34a}
+.btn-warning{background:var(--warning);color:#000}.btn-warning:hover{background:#d97706}
+.btn-sm{padding:4px 10px;font-size:12px}
+.table-wrap{overflow-x:auto;background:var(--surface);border-radius:8px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface2);padding:10px 12px;text-align:left;font-weight:600;color:var(--text2);white-space:nowrap;position:sticky;top:0;z-index:1}
+td{padding:8px 12px;border-top:1px solid var(--border);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tr:hover td{background:var(--surface2)}
+.pk{color:var(--primary);font-weight:600}
+.null-val{color:var(--text2);font-style:italic}
+.pagination{display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:13px;color:var(--text2)}
+.pagination button{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer}
+.pagination button:disabled{opacity:.4;cursor:default}
+.edit-cell{cursor:pointer;position:relative}
+.edit-cell:hover{background:var(--primary) !important;color:#fff !important;opacity:.8}
+.edit-input{width:100%;background:var(--bg);border:1px solid var(--primary);color:var(--text);padding:4px 8px;font-size:13px;outline:none;border-radius:3px}
+.sql-area{width:100%;min-height:120px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:12px;font-family:'Fira Code',monospace;font-size:13px;border-radius:8px;resize:vertical}
+.sql-result{margin-top:16px;max-height:500px;overflow:auto}
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:flex;justify-content:center;align-items:center;z-index:100}
+.modal{background:var(--surface);border-radius:12px;padding:24px;width:90%;max-width:600px;max-height:80vh;overflow-y:auto}
+.modal h3{margin-bottom:16px}
+.modal label{display:block;font-size:13px;color:var(--text2);margin-bottom:4px;margin-top:12px}
+.modal input,.modal select,.modal textarea{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:13px}
+.modal .btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500}
+.badge-success{background:#166534;color:#bbf7d0}
+.badge-danger{background:#7f1d1d;color:#fecaca}
+.badge-warning{background:#78350f;color:#fef3c7}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text2)}
+.empty-state p{margin-top:8px}
+.loading{text-align:center;padding:40px;color:var(--text2)}
+select option{background:var(--surface);color:var(--text)}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h2>SQLite Admin</h2>
+  <nav id="tableNav"></nav>
+</div>
+
+<div class="main">
+  <div class="header">
+    <h1 id="pageTitle">Pilih Tabel</h1>
+    <div>
+      <button class="btn btn-ghost btn-sm" onclick="refreshCurrentTable()">Refresh</button>
+      <button class="btn btn-primary btn-sm" onclick="showAddRowModal()">+ Tambah Baris</button>
+    </div>
+  </div>
+
+  <div class="tabs" id="viewTabs">
+    <button class="tab active" data-tab="data" onclick="switchTab('data')">Data</button>
+    <button class="tab" data-tab="structure" onclick="switchTab('structure')">Struktur</button>
+    <button class="tab" data-tab="sql" onclick="switchTab('sql')">SQL Query</button>
+  </div>
+
+  <div id="dataView">
+    <div class="toolbar">
+      <input type="text" class="search" id="searchInput" placeholder="Cari..." oninput="debounceSearch()">
+      <select id="searchColumn" onchange="loadTableData()">
+        <option value="">Semua Kolom</option>
+      </select>
+      <select id="limitSelect" onchange="loadTableData()">
+        <option value="25">25 baris</option>
+        <option value="50" selected>50 baris</option>
+        <option value="100">100 baris</option>
+        <option value="500">500 baris</option>
+      </select>
+      <button class="btn btn-danger btn-sm" id="deleteSelectedBtn" style="display:none" onclick="deleteSelected()">Hapus Terpilih</button>
+    </div>
+    <div class="table-wrap">
+      <table id="dataTable"></table>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <div id="structureView" style="display:none">
+    <div class="table-wrap">
+      <table id="structureTable"></table>
+    </div>
+  </div>
+
+  <div id="sqlView" style="display:none">
+    <div class="toolbar">
+      <textarea class="sql-area" id="sqlInput" placeholder="SELECT * FROM bahan LIMIT 10"></textarea>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn-primary" onclick="executeQuery()">Jalankan Query</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('sqlInput').value=''">Bersihkan</button>
+    </div>
+    <div class="sql-result" id="sqlResult"></div>
+  </div>
+</div>
+
+<div id="modalContainer"></div>
+
+<script>
+let currentTable = '';
+let currentPage = 1;
+let currentPK = '';
+let selectedRows = new Set();
+let tableSchemas = {};
+let authToken = '';
+let allTables = [];
+
+function getToken() {
+  return localStorage.getItem('token') || authToken;
+}
+
+async function api(endpoint, body = {}) {
+  const token = getToken();
+  if (!token) { window.location.href = '/login'; return; }
+  const res = await fetch('/api/admin' + endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify(body)
+  });
+  if (res.status === 401) { window.location.href = '/login'; return; }
+  return res.json();
+}
+
+function getPKForTable(tableName) {
+  const schema = tableSchemas[tableName];
+  if (!schema) return '';
+  const pkCol = schema.find(c => c.pk);
+  return pkCol ? pkCol.name : '';
+}
+
+async function loadTables() {
+  const data = await api('/tables');
+  if (data.error) { alert(data.error); return; }
+  allTables = data;
+  const nav = document.getElementById('tableNav');
+  nav.innerHTML = '<div class="section">Tabel Database</div>';
+  data.forEach(t => {
+    tableSchemas[t.name] = t.columns;
+    const btn = document.createElement('button');
+    btn.textContent = `${t.name} (${t.rows})`;
+    btn.dataset.table = t.name;
+    btn.onclick = () => selectTable(t.name);
+    nav.appendChild(btn);
+  });
+}
+
+function selectTable(tableName) {
+  currentTable = tableName;
+  currentPage = 1;
+  selectedRows = new Set();
+  currentPK = getPKForTable(tableName);
+
+  document.querySelectorAll('#tableNav button').forEach(b => {
+    b.classList.toggle('active', b.dataset.table === tableName);
+  });
+
+  document.getElementById('pageTitle').textContent = tableName;
+  const colSelect = document.getElementById('searchColumn');
+  const schema = tableSchemas[tableName] || [];
+  colSelect.innerHTML = '<option value="">Semua Kolom</option>' + schema.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+
+  switchTab('data');
+  loadTableData();
+}
+
+async function loadTableData() {
+  if (!currentTable) return;
+  const search = document.getElementById('searchInput').value;
+  const searchColumn = document.getElementById('searchColumn').value;
+  const limit = parseInt(document.getElementById('limitSelect').value);
+
+  const data = await api(`/table/${currentTable}`, { page: currentPage, limit, search, searchColumn });
+  if (data.error) { alert(data.error); return; }
+
+  currentPK = data.columns.find(c => c.pk)?.name || data.columns[0]?.name || '';
+
+  renderDataTable(data);
+  renderPagination(data);
+}
+
+function renderDataTable(data) {
+  const table = document.getElementById('dataTable');
+  if (!data.rows || data.rows.length === 0) {
+    table.innerHTML = '<tr><td colspan="99" class="empty-state"><p>Tidak ada data</p></td></tr>';
+    document.getElementById('deleteSelectedBtn').style.display = 'none';
+    return;
+  }
+
+  const pk = currentPK;
+  const checkedAll = data.rows.every(r => selectedRows.has(String(r[pk])));
+
+  let html = '<thead><tr>';
+  html += `<th><input type="checkbox" ${checkedAll ? 'checked' : ''} onchange="toggleAllRows(this)"></th>`;
+  html += `<th>#</th>`;
+  data.columns.forEach(c => {
+    const badge = c.pk ? ' <span class="badge badge-warning">PK</span>' : (c.notnull ? ' <span class="badge badge-danger">NN</span>' : '');
+    html += `<th>${c.name}${badge}</th>`;
+  });
+  html += '<th>Aksi</th></tr></thead><tbody>';
+
+  data.rows.forEach((row, i) => {
+    const pkVal = String(row[pk] || '');
+    const isSelected = selectedRows.has(pkVal);
+    html += `<tr data-pk="${pkVal}">`;
+    html += `<td><input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleRow('${pkVal}')"></td>`;
+    html += `<td style="color:var(--text2)">${(currentPage - 1) * parseInt(document.getElementById('limitSelect').value) + i + 1}</td>`;
+    data.columns.forEach(c => {
+      const val = row[c.name];
+      const isPK = c.pk;
+      const display = val === null ? '<span class="null-val">NULL</span>' : escapeHtml(String(val));
+      const cls = isPK ? 'pk' : 'edit-cell';
+      html += `<td class="${cls}" ${!isPK ? `ondblclick="editCell(this,'${escapeAttr(c.name)}','${escapeAttr(pk)}','${escapeAttr(pkVal)}')"` : ''}>${display}</td>`;
+    });
+    html += `<td><button class="btn btn-danger btn-sm" onclick="deleteRow('${escapeAttr(pkVal)}')">Hapus</button></td>`;
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  table.innerHTML = html;
+
+  document.getElementById('deleteSelectedBtn').style.display = selectedRows.size > 0 ? '' : 'none';
+  document.getElementById('deleteSelectedBtn').textContent = `Hapus ${selectedRows.size} Terpilih`;
+}
+
+function renderPagination(data) {
+  const el = document.getElementById('pagination');
+  if (data.totalPages <= 1) { el.innerHTML = `<span>${data.total} baris</span><span></span>`; return; }
+  el.innerHTML = `
+    <span>Halaman ${data.page} dari ${data.totalPages} (${data.total} baris)</span>
+    <div>
+      <button ${data.page <= 1 ? 'disabled' : ''} onclick="goToPage(${data.page - 1})">Sebelumnya</button>
+      <button ${data.page >= data.totalPages ? 'disabled' : ''} onclick="goToPage(${data.page + 1})">Berikutnya</button>
+    </div>
+  `;
+}
+
+function goToPage(p) { currentPage = p; loadTableData(); }
+
+function renderStructure(data) {
+  const table = document.getElementById('structureTable');
+  let html = '<thead><tr><th>Kolom</th><th>Tipe</th><th>Not Null</th><th>Default</th><th>Primary Key</th></tr></thead><tbody>';
+  data.columns.forEach(c => {
+    html += `<tr>
+      <td class="pk">${escapeHtml(c.name)}</td>
+      <td>${escapeHtml(c.type || 'ANY')}</td>
+      <td>${c.notnull ? '<span class="badge badge-danger">YES</span>' : 'NO'}</td>
+      <td>${c.dflt_value !== null ? escapeHtml(String(c.dflt_value)) : '<span class="null-val">NULL</span>'}</td>
+      <td>${c.pk ? '<span class="badge badge-warning">YES</span>' : 'NO'}</td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+async function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.getElementById('dataView').style.display = tab === 'data' ? '' : 'none';
+  document.getElementById('structureView').style.display = tab === 'structure' ? '' : 'none';
+  document.getElementById('sqlView').style.display = tab === 'sql' ? '' : 'none';
+
+  if (tab === 'structure' && currentTable) {
+    const data = await api(`/table/${currentTable}`, { page: 1, limit: 1 });
+    if (!data.error) renderStructure(data);
+  }
+  if (tab === 'sql') {
+    document.getElementById('sqlInput').focus();
+  }
+}
+
+function debounceSearch() {
+  clearTimeout(window._searchTimer);
+  window._searchTimer = setTimeout(() => { currentPage = 1; loadTableData(); }, 300);
+}
+
+function toggleRow(pkVal) {
+  if (selectedRows.has(pkVal)) selectedRows.delete(pkVal);
+  else selectedRows.add(pkVal);
+  loadTableData();
+}
+
+function toggleAllRows(checkbox) {
+  const rows = document.querySelectorAll('#dataTable tbody tr');
+  rows.forEach(tr => {
+    const pkVal = tr.dataset.pk;
+    if (checkbox.checked) selectedRows.add(pkVal);
+    else selectedRows.delete(pkVal);
+  });
+  loadTableData();
+}
+
+async function deleteRow(pkValue) {
+  if (!confirm(`Hapus baris dengan ${currentPK} = "${pkValue}"?`)) return;
+  const res = await api('/row/delete', { table: currentTable, pkColumn: currentPK, pkValue });
+  if (res.error) { alert(res.error); return; }
+  selectedRows.delete(String(pkValue));
+  loadTableData();
+  loadTables();
+}
+
+async function deleteSelected() {
+  if (selectedRows.size === 0) return;
+  if (!confirm(`Hapus ${selectedRows.size} baris yang dipilih?`)) return;
+  const res = await api('/row/delete-batch', { table: currentTable, pkColumn: currentPK, pkValues: [...selectedRows] });
+  if (res.error) { alert(res.error); return; }
+  selectedRows.clear();
+  loadTableData();
+  loadTables();
+}
+
+function editCell(td, column, pkColumn, pkValue) {
+  if (td.querySelector('input')) return;
+  const original = td.textContent;
+  const input = document.createElement('input');
+  input.className = 'edit-input';
+  input.value = original === 'NULL' ? '' : original;
+  td.innerHTML = '';
+  td.appendChild(input);
+  input.focus();
+  input.select();
+
+  const save = async () => {
+    const value = input.value;
+    const finalValue = value === '' ? null : value;
+    const res = await api('/row/update', { table: currentTable, column, pkColumn, pkValue, value: finalValue });
+    if (res.error) { alert(res.error); td.textContent = original; return; }
+    loadTableData();
+  };
+
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { input.blur(); }
+    if (e.key === 'Escape') { td.textContent = original; }
+  });
+}
+
+function showAddRowModal() {
+  if (!currentTable) { alert('Pilih tabel terlebih dahulu.'); return; }
+  const schema = tableSchemas[currentTable] || [];
+  const pkCol = schema.find(c => c.pk);
+  const hasAutoPK = pkCol && pkCol.type.toUpperCase().includes('INTEGER');
+
+  let html = '<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">';
+  html += `<h3>Tambah Baris ke "${currentTable}"</h3>`;
+  schema.forEach(c => {
+    const skip = hasAutoPK && c.pk;
+    html += `<label>${c.name} ${c.pk ? '(PK)' : ''} ${c.notnull ? '*' : ''}</label>`;
+    if (skip) {
+      html += `<input type="text" value="(auto)" disabled data-col="${c.name}" data-skip="1">`;
+    } else {
+      html += `<input type="text" placeholder="${c.type || 'text'}" data-col="${c.name}">`;
+    }
+  });
+  html += '<div class="btn-row"><button class="btn btn-ghost" onclick="closeModal()">Batal</button><button class="btn btn-primary" onclick="addRow()">Simpan</button></div>';
+  html += '</div></div>';
+
+  document.getElementById('modalContainer').innerHTML = html;
+}
+
+async function addRow() {
+  const inputs = document.querySelectorAll('#modalContainer input[data-col]');
+  const data = {};
+  inputs.forEach(inp => {
+    if (inp.dataset.skip === '1') return;
+    const val = inp.value.trim();
+    if (val === '') return;
+    const colInfo = (tableSchemas[currentTable] || []).find(c => c.name === inp.dataset.col);
+    if (colInfo && (colInfo.type.toUpperCase().includes('INT') || colInfo.type.toUpperCase().includes('NUM'))) {
+      data[inp.dataset.col] = parseInt(val) || 0;
+    } else {
+      data[inp.dataset.col] = val;
+    }
+  });
+
+  const res = await api('/row/insert', { table: currentTable, data });
+  if (res.error) { alert(res.error); return; }
+  closeModal();
+  loadTableData();
+  loadTables();
+}
+
+function closeModal() {
+  document.getElementById('modalContainer').innerHTML = '';
+}
+
+async function executeQuery() {
+  const sql = document.getElementById('sqlInput').value.trim();
+  if (!sql) return;
+  const data = await api('/query', { sql });
+  const resultEl = document.getElementById('sqlResult');
+  if (data.error) {
+    resultEl.innerHTML = `<div style="background:#7f1d1d;padding:12px;border-radius:6px;color:#fecaca">${escapeHtml(data.error)}</div>`;
+    return;
+  }
+  if (!data.rows || data.rows.length === 0) {
+    resultEl.innerHTML = `<div style="background:var(--surface2);padding:12px;border-radius:6px;color:var(--text2)">Query berhasil, 0 baris.</div>`;
+    return;
+  }
+  const cols = Object.keys(data.rows[0]);
+  let html = `<p style="margin-bottom:8px;color:var(--text2)">${data.count} baris</p><div class="table-wrap"><table><thead><tr>`;
+  cols.forEach(c => html += `<th>${escapeHtml(c)}</th>`);
+  html += '</tr></thead><tbody>';
+  data.rows.forEach(r => {
+    html += '<tr>';
+    cols.forEach(c => {
+      const v = r[c];
+      html += `<td>${v === null ? '<span class="null-val">NULL</span>' : escapeHtml(String(v))}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  resultEl.innerHTML = html;
+}
+
+function refreshCurrentTable() {
+  if (currentTable) loadTableData();
+}
+
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function escapeAttr(s) {
+  return String(s).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+(async function init() {
+  const token = localStorage.getItem('token') || '';
+  if (!token) { window.location.href = '/login'; return; }
+  authToken = token;
+  await loadTables();
+  if (allTables.length > 0) selectTable(allTables[0].name);
+})();
+</script>
+</body>
+</html>

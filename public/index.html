@@ -290,7 +290,9 @@
         @media (max-width: 767px) {
             .card-header { padding: 0.85rem 1rem; }
         }
-        .mobile-sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 55; }
+        .mobile-sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 58; }
+        body.sidebar-open { overflow: hidden; }
+        body.sidebar-open main { pointer-events: none; }
     </style>
 </head>
 <body>
@@ -379,7 +381,7 @@
         </aside>
 
         <!-- Mobile sidebar overlay -->
-        <div class="mobile-sidebar-overlay fixed inset-0 bg-black/70 z-[55]" id="mobile-sidebar-overlay" onclick="closeMenu()" style="display:none;"></div>
+        <div class="mobile-sidebar-overlay fixed inset-0 bg-black/70 z-[58]" id="mobile-sidebar-overlay" onclick="closeMenu()" style="display:none;"></div>
 
         <!-- TopNavBar -->
         <header class="fixed top-0 right-0 left-0 z-50 flex flex-col h-[58px] w-full" style="background: var(--bg-body); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);">

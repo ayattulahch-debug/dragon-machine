@@ -227,6 +227,18 @@
         .search-icon { display: inline-flex; align-items: center; justify-content: center; padding: 0 0.6rem 0 0.85rem; color: var(--text-muted); font-size: 1rem; flex-shrink: 0; pointer-events: none; }
         .search-input { width: 100%; padding: 0.55rem 0.85rem 0.55rem 0.25rem; background: transparent; border: none; color: var(--text); font-size: 0.875rem; outline: none; }
         .search-input::placeholder { color: var(--text-muted); opacity: 1; }
+
+        /* Placeholder global — lebih terang di dark theme agar mudah dibaca */
+        ::placeholder { color: var(--text-muted); opacity: 1; }
+        [data-theme="dark"] ::placeholder { color: #9ca3af; opacity: 1; }
+        [data-theme="dark"] input::placeholder,
+        [data-theme="dark"] textarea::placeholder,
+        [data-theme="dark"] select option:first-child { color: #9ca3af; }
+
+        /* Table responsive — pastikan scroll horizontal & tidak meluap */
+        .table-responsive { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; }
+        .table { table-layout: auto; width: 100%; max-width: 100%; margin-bottom: 0; }
+        .page-content { width: 100%; max-width: 100%; overflow-x: hidden; }
         .filter-select { width: 100%; padding: 0.55rem 2rem 0.55rem 0.85rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.875rem; outline: none; transition: border .2s; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%238a8a92' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 12px; cursor: pointer; min-width: 140px; }
         .filter-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
 
@@ -1328,6 +1340,19 @@ function api(method) {
 }
 
 // Global State
+// Mapping username staff ke nama lab (untuk menampilkan permintaan/riwayat milik lab)
+function usernameToLab(username) {
+  const map = {
+    'lab_farmakologi': 'Lab Farmakologi',
+    'lab_farmasetika': 'Lab Farmasetika',
+    'lab_r_instrumen': 'Lab R Instrumen',
+    'lab_farmakognosi': 'Lab Farmakognosi',
+    'lab_kimia_dasar': 'Lab Kimia Dasar',
+    'lab_mikrobiologi': 'Lab Mikrobiologi'
+  };
+  return map[username] || '';
+}
+
 let db = {
   bahan: [],
   barangKeluar: [],
@@ -2342,9 +2367,10 @@ function renderRiwayatKeluar() {
   tbody.innerHTML = '';
   let dataRiwayat = db.barangKeluar;
   const myUsername = localStorage.getItem('userUsername') || '';
-  // Staff hanya lihat transaksi miliknya (berdasarkan username pemohon)
+  const myLab = usernameToLab(myUsername);
+  // Staff lihat transaksi miliknya (berdasarkan username pemohon) ATAU transaksi untuk lab-nya
   if (role === 'Staff') {
-    dataRiwayat = dataRiwayat.filter(t => t.username === myUsername);
+    dataRiwayat = dataRiwayat.filter(t => t.username === myUsername || (myLab && t.tujuanLab === myLab));
   }
   const filterTahunEl = document.getElementById('filter-riwayat-tahun');
   const filterTahun = filterTahunEl ? filterTahunEl.value : 'semua';
@@ -2615,7 +2641,7 @@ function renderPermintaanSaya() {
     return;
   }
   let rows = '';
-  list.forEach(p => {
+  list.slice().reverse().forEach(p => {
     const safeId = String(p.id).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     let statusBadge = '';
     if (p.status === 'Pending') statusBadge = '<span class="badge bg-warning text-dark">Pending</span>';

@@ -260,10 +260,26 @@ app.post('/api/buatPermintaan', authenticate, requireStaffOrMaster, (req, res) =
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Staff lihat permintaan miliknya sendiri
+// Mapping username staff ke nama lab (untuk filter permintaan/riwayat antar akun)
+function usernameToLab(username) {
+  const map = {
+    'lab_farmakologi': 'Lab Farmakologi',
+    'lab_farmasetika': 'Lab Farmasetika',
+    'lab_r_instrumen': 'Lab R Instrumen',
+    'lab_farmakognosi': 'Lab Farmakognosi',
+    'lab_kimia_dasar': 'Lab Kimia Dasar',
+    'lab_mikrobiologi': 'Lab Mikrobiologi'
+  };
+  return map[username] || '';
+}
+
+// Staff lihat permintaan miliknya sendiri ATAU permintaan untuk lab-nya (jika dibuatkan oleh Master)
 app.post('/api/permintaanSaya', authenticate, requireStaffOrMaster, (req, res) => {
   try {
-    const rows = db.prepare('SELECT * FROM permintaan WHERE pemohon_id = ? ORDER BY id DESC').all(req.user.id);
+    const userLab = usernameToLab(req.user.username);
+    const rows = db.prepare(
+      'SELECT * FROM permintaan WHERE pemohon_id = ? OR distribusi = ? ORDER BY id DESC'
+    ).all(req.user.id, userLab);
     res.json(rows.map(r => {
       const itemCount = db.prepare('SELECT COUNT(*) AS c FROM permintaan_item WHERE permintaan_id = ?').get(r.id).c;
       return {

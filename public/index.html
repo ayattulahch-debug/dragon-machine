@@ -144,7 +144,7 @@
 
         /* Sidebar - fixed layout */
         .fixed-sidebar {
-            position: fixed; left: 0; top: 0; bottom: 0; width: 280px; z-index: 60;
+            position: fixed; left: 0; top: 0; bottom: 0; width: 280px; z-index: 1040;
             display: flex; flex-direction: column; height: 100%;
             padding: 24px 0; overflow-y: auto;
         }
@@ -191,6 +191,7 @@
         .table-striped tbody tr:nth-of-type(odd) { background: var(--bg-elevated); }
         .table-dark { --bs-table-bg: var(--bg-elevated); --bs-table-color: var(--text-heading); }
         .table-dark th { background: var(--bg-elevated); color: var(--text-heading); border-color: var(--border) !important; }
+        thead.sticky-top { z-index: 20; }
 
         /* Badges */
         .badge { font-weight: 500; padding: 0.25em 0.65em; border-radius: 999px; }
@@ -290,7 +291,7 @@
         @media (max-width: 767px) {
             .card-header { padding: 0.85rem 1rem; }
         }
-        .mobile-sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 58; }
+        .mobile-sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1030; }
         body.sidebar-open { overflow: hidden; }
         body.sidebar-open main { pointer-events: none; }
     </style>
@@ -307,7 +308,7 @@
     <div id="view-app" class="view-section active min-h-screen flex flex-col md:flex-row">
 
         <!-- SideNavBar -->
-<aside class="fixed-sidebar fixed left-0 top-0 bottom-0 w-[280px] z-[60] flex-col h-full py-lg"
+<aside class="fixed-sidebar fixed left-0 top-0 bottom-0 w-[280px] z-[1040] flex-col h-full py-lg"
               style="background: #161b22; border-right: 1px solid rgba(48,54,61,0.4);">
             <div class="px-lg mb-xl">
                 <h1 class="fw-bold tracking-tight mb-0" style="font-family: 'Hanken Grotesk', sans-serif; font-size: 32px; line-height: 40px; color: #79c0ff;">Dragon Machine</h1>
@@ -381,7 +382,7 @@
         </aside>
 
         <!-- Mobile sidebar overlay -->
-        <div class="mobile-sidebar-overlay fixed inset-0 bg-black/70 z-[58]" id="mobile-sidebar-overlay" onclick="closeMenu()" style="display:none;"></div>
+        <div class="mobile-sidebar-overlay fixed inset-0 bg-black/70 z-[1030]" id="mobile-sidebar-overlay" onclick="closeMenu()" style="display:none;"></div>
 
         <!-- TopNavBar -->
         <header class="fixed top-0 right-0 left-0 z-50 flex flex-col h-[58px] w-full" style="background: var(--bg-body); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);">
@@ -1757,7 +1758,26 @@ function openProfilSettings() {
   document.getElementById('profil-nama').value = localStorage.getItem('userName') || '';
   document.getElementById('profil-role').value = localStorage.getItem('userRole') || '';
   document.getElementById('profil-password').value = '';
+  // Reset toggle password ke mode tersembunyi setiap kali modal dibuka
+  var pwdInput = document.getElementById('profil-password');
+  var pwdIcon  = document.getElementById('profil-password-icon');
+  if (pwdInput) pwdInput.type = 'password';
+  if (pwdIcon)  pwdIcon.className = 'bi bi-eye';
+  // Update inisial avatar dari nama/username
+  var avatarEl = document.getElementById('profil-avatar');
+  if (avatarEl) {
+    var nama = localStorage.getItem('userName') || localStorage.getItem('userUsername') || 'U';
+    avatarEl.innerText = (nama.trim().charAt(0) || 'U').toUpperCase();
+  }
   modalProfilSettings.show();
+}
+function toggleProfilPassword() {
+  var input = document.getElementById('profil-password');
+  var icon  = document.getElementById('profil-password-icon');
+  if (!input) return;
+  var show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  if (icon) icon.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
 }
 function simpanProfil() {
   var nama = document.getElementById('profil-nama').value.trim();
@@ -2392,7 +2412,7 @@ function renderRiwayatKeluar() {
   if (dataRiwayat.length === 0) {
     rows = '<tr><td colspan="10" class="text-center text-muted py-4">' + (role === 'Staff' ? 'Belum ada transaksi dari permintaan Anda yang disetujui.' : 'Tidak ada data riwayat.') + '</td></tr>';
   }
-  dataRiwayat.slice().reverse().forEach(t => {
+  dataRiwayat.forEach(t => {
     const safeIdTrx = (t.idTransaksi || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     const hapusBtn = isMaster ? '<button class="btn btn-sm btn-outline-danger" onclick="hapusTransaksi(\'' + safeIdTrx + '\')" title="Hapus Transaksi (Kembalikan Stok)"><i class="bi bi-trash"></i></button>' : '';
     rows += "<tr>\n            <td>" + escapeHTML(t.idRiwayat || '-') + "</td>\n            <td class=\"text-primary fw-bold\" style=\"min-width: 150px;\">" + escapeHTML(t.namaBahan) + "</td>\n            <td>" + t.jumlah + "</td>\n            <td>" + escapeHTML(t.satuan) + "</td>\n            <td>" + escapeHTML(t.tujuanLab) + "</td>\n            <td><small>" + escapeHTML(t.tanggal || '-') + "</small></td>\n            <td>" + escapeHTML(t.pemohon) + "</td>\n            <td class=\"text-danger fw-bold bg-danger bg-opacity-10 text-center\">" + (t.stok || 0) + "</td>\n            <td class=\"text-center\">" + escapeHTML(t.idBahan) + "</td>\n            <td>\n                <div class=\"btn-group\">\n                    <button class=\"btn btn-sm btn-outline-secondary\" onclick=\"cetakDokumenByIdTrx('" + safeIdTrx + "')\" title=\"Cetak Transaksi Ini\">\n                        <i class=\"bi bi-printer\"></i>\n                    </button>\n                    " + hapusBtn + "\n                </div>\n            </td>\n        </tr>";
@@ -3119,36 +3139,58 @@ function handleFileImportBarangKeluar(event) {
 
     <!-- MODAL: Pengaturan Profil (semua role) -->
     <div class="modal fade" id="modalProfilSettings" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" style="color:var(--text-header);"><i class="bi bi-person-gear me-2"></i> Pengaturan Profil</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); overflow: hidden;">
+                <!-- Header dengan avatar gradient -->
+                <div class="modal-header d-flex align-items-center gap-3" style="border-bottom: 1px solid var(--border); padding: 1.25rem 1.5rem;">
+                    <div id="profil-avatar" style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), #8b5cf6); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 1.1rem; flex-shrink: 0; box-shadow: 0 4px 12px rgba(88,166,255,0.25);">U</div>
+                    <div class="flex-1">
+                        <h5 class="modal-title mb-0" style="color: var(--text-heading); font-weight: 700; font-size: 1.1rem;">Pengaturan Profil</h5>
+                        <small style="color: #9CA3AF; font-size: 0.75rem;">Kelola informasi akun Anda</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup" style="opacity: 0.85;"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Username</label>
-                        <input type="text" class="form-control" id="profil-username" readonly style="font-weight:600;">
-                        <small class="text-muted">Username tidak bisa diubah</small>
+                <div class="modal-body" style="padding: 1.5rem;">
+                    <!-- Username (read-only + ikon gembok) -->
+                    <div class="mb-4">
+                        <label class="form-label" for="profil-username">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text" style="background: var(--bg-elevated); border: 1px solid var(--border); border-right: none; color: #9CA3AF;"><i class="bi bi-lock-fill"></i></span>
+                            <input type="text" class="form-control" id="profil-username" readonly style="font-weight: 600; color: #E5E7EB; background: var(--bg-elevated); border-left: none;">
+                        </div>
+                        <small style="color: #9CA3AF; font-size: 0.72rem;">Username tidak bisa diubah</small>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Nama Lengkap</label>
-                        <input type="text" class="form-control" id="profil-nama" placeholder="Nama untuk tanda tangan dokumen">
-                        <small class="text-muted">Nama ini akan muncul di dokumen permintaan sebagai Pemohon</small>
+                    <!-- Nama Lengkap (editable) -->
+                    <div class="mb-4">
+                        <label class="form-label" for="profil-nama">Nama Lengkap</label>
+                        <input type="text" class="form-control" id="profil-nama" placeholder="Nama untuk tanda tangan dokumen" style="color: #E5E7EB;">
+                        <small style="color: #9CA3AF; font-size: 0.72rem;">Nama ini akan muncul di dokumen permintaan sebagai Pemohon</small>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Role</label>
-                        <input type="text" class="form-control" id="profil-role" readonly>
+                    <!-- Role (read-only + ikon gembok) -->
+                    <div class="mb-4">
+                        <label class="form-label" for="profil-role">Role</label>
+                        <div class="input-group">
+                            <span class="input-group-text" style="background: var(--bg-elevated); border: 1px solid var(--border); border-right: none; color: #9CA3AF;"><i class="bi bi-lock-fill"></i></span>
+                            <input type="text" class="form-control" id="profil-role" readonly style="font-weight: 600; color: #E5E7EB; background: var(--bg-elevated); border-left: none;">
+                        </div>
+                        <small style="color: #9CA3AF; font-size: 0.72rem;">Role ditentukan oleh administrator</small>
                     </div>
-                    <hr style="border-color:var(--border) !important;">
-                    <div class="mb-3">
-                        <label class="form-label">Ganti Password <small class="text-muted">(opsional)</small></label>
-                        <input type="password" class="form-control" id="profil-password" placeholder="Kosongkan jika tidak ingin ganti">
+                    <hr style="border-color: var(--border) !important; margin: 1.25rem 0;">
+                    <!-- Ganti Password (show/hide toggle) -->
+                    <div class="mb-1">
+                        <label class="form-label" for="profil-password">Ganti Password <small style="color: #9CA3AF; font-weight: 400;">(opsional)</small></label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="profil-password" placeholder="Kosongkan jika tidak ingin ganti" style="color: #E5E7EB; border-right: none;">
+                            <button type="button" class="btn btn-outline-secondary" onclick="toggleProfilPassword()" aria-label="Tampilkan/sembunyikan password" style="background: var(--bg-input); border: 1px solid var(--border); border-left: none; color: #9CA3AF;">
+                                <i class="bi bi-eye" id="profil-password-icon"></i>
+                            </button>
+                        </div>
+                        <small style="color: #9CA3AF; font-size: 0.72rem;">Minimal 6 karakter untuk keamanan</small>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                    <button type="button" class="btn btn-primary" onclick="simpanProfil()"><i class="bi bi-check-lg"></i> Simpan</button>
+                <div class="modal-footer" style="border-top: 1px solid var(--border); padding: 1rem 1.5rem;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="color: var(--text);">Tutup</button>
+                    <button type="button" class="btn btn-primary" onclick="simpanProfil()" style="background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600;"><i class="bi bi-check-lg me-1"></i> Simpan Perubahan</button>
                 </div>
             </div>
         </div>

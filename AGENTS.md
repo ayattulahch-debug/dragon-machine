@@ -17,7 +17,6 @@
 | **Healthcheck** | `GET /api/health` → `{ ok: true }` (timeout 300s) |
 | **Port** | `process.env.PORT || 3000` (Railway inject `PORT`) |
 | **DB path (prod)** | via env `DB_PATH` (set di Railway dashboard) |
-| **Alt config** | `fly.toml` ada (app `dragon-machine`, region `sin`, volume `/data`) — CADANGAN, bukan aktif |
 
 ### Trigger deploy
 ```
@@ -61,7 +60,7 @@ Urutan baku setiap permintaan perubahan:
 8. **Update section 3 (Status)** di file ini.
 
 ### Stack proyek (pahami sebelum edit)
-- **Frontend:** `public/index.html` (SINGLE FILE besar ~3160 baris). Bootstrap 5 + Tailwind CDN + vanilla JS. **TIDAK ADA build step. TIDAK ADA React.** Edit langsung, refresh browser = lihat hasil.
+- **Frontend:** `public/index.html` (SINGLE FILE besar). Bootstrap 5 + Tailwind CSS (static, hasil build CLI) + vanilla JS. **TIDAK ADA React.** Edit langsung HTML kemudian `npm run build:css` (atau `npm run dev:css`) jika menambah class Tailwind baru; CSS output di-commit, sehingga Railway tetap tanpa build step saat deploy.
 - **Backend:** `server.js` (Express + JWT auth), `db.js` (skema + seed SQLite via better-sqlite3), `admin-api.js` (endpoint admin).
 - **Tema:** variabel CSS di `:root[data-theme="dark"]` / `[light"]` (`public/index.html:62-105`). Pakai var ini (`--bg-card`, `--text`, `--accent`, `--border`, dll) agar konsisten & support switch tema.
 - **Login default (offline fallback):** `admin`/`admin123`, `tamu`/`tamu123`.
@@ -76,30 +75,32 @@ Urutan baku setiap permintaan perubahan:
 
 ## 3. STATUS TERAKHIR (update tiap selesai perubahan)
 
-**Tanggal:** 27 Jun 2026
-**Commit terakhir:** `151e56c` — `feat(profil): redesign modal pengaturan profil + fix urutan riwayat`
+**Tanggal:** 29 Jun 2026
+**Commit terakhir:** commit ini — `refactor(frontend): ganti Tailwind CDN dengan CSS statis + Menu Eksternal + fix mobile Quick Actions`
 **Branch:** `main` (sync dengan `origin/main`)
 **Status deploy:** Push terkirim → Railway rebuild ter-trigger. Pantau di dashboard Railway.
 
-### Yang sudah dikerjakan di commit `151e56c`
-- [x] Perbaiki z-index sidebar/overlay vs thead sticky (commit sebelumnya `5944c6c`, `831393c`)
-- [x] Redesign modal **Pengaturan Profil**: dark premium, avatar gradient + inisial, spacing lega
-- [x] Username & Role read-only dengan ikon gembok (`bi-lock-fill`)
-- [x] Password show/hide toggle (ikon mata), auto-reset saat buka modal (`toggleProfilPassword()`)
-- [x] Kontras teks: input `#E5E7EB`, helper `#9CA3AF`
-- [x] Riwayat Transaksi: data terbaru di paling atas (hapus `.reverse()` di `renderRiwayatKeluar`)
-- [x] Verifikasi server boots OK (HTTP 200, no stderr)
+### Yang sudah dikerjakan
+- [x] Hapus Tailwind Play CDN (`cdn.tailwindcss.com`) → ganti `public/css/tailwind.css` statis hasil Tailwind CLI.
+- [x] Tambah tooling: `tailwindcss`, `@tailwindcss/forms`, `@tailwindcss/container-queries` (devDependencies); `tailwind.config.js`, `public/css/tailwind.input.css`, npm scripts `build:css` & `dev:css`.
+- [x] Hapus file tidak penting: `fly.toml`, `adminer-5.4.2.php`, `adminer-5.4.2-mysql.php`, log `server-*.log`, stale `server/node_modules/`.
+- [x] Fix layout mobile Quick Actions "Persetujuan Permintaan": hapus absolute positioning, gunakan flex-wrap agar badge tidak menumpuk teks di layar sempit.
+- [x] Tambah sidebar menu **Menu Eksternal** (di atas kategori Laporan Gudang) untuk semua role.
+- [x] Tambah page `page-menu-eksternal` dengan grid kartu tautan.
+- [x] Integrasi pengaturan tautan di dalam modal **Pengaturan Sistem** (Master only): CRUD tautan dengan label, icon picker, URL. Data disimpan di `settings.menu_eksternal` (JSON).
+- [x] Verifikasi lokal: server boots HTTP 200, login + getAllData + saveSetting OK, tidak ada stderr.
 
 ### Yang belum / TODO
-- [ ] Update `PROGRESS.md` (masih out-of-date: tulis "Belum deploy" padahal sudah ada Railway config)
-- [ ] Pertimbangkan tambah pola `server/data/` ke `.gitignore` agar WAL tak perlu di-skip manual
-- [ ] Verifikasi visual modal profil & urutan riwayat di deploy Railway (setelah rebuild selesai)
+- [ ] Update `PROGRESS.md` agar mencerminkan status deploy & fitur terbaru.
+- [ ] Pertimbangkan tambah pola `server/data/` ke `.gitignore` agar WAL tak perlu di-skip manual.
+- [ ] Verifikasi visual Menu Eksternal & layout mobile Quick Actions di deploy Railway.
+- [ ] Regenerasi `public/css/tailwind.css` setiap menambah class Tailwind baru (gunakan `npm run build:css`).
 
 ### Riwayat commit (3 terakhir)
 ```
+(refactor/frontend commit ini) refactor(frontend): ganti Tailwind CDN dengan CSS statis + Menu Eksternal + fix mobile Quick Actions
 151e56c feat(profil): redesign modal pengaturan profil + fix urutan riwayat
 5944c6c fix(mobile): increase overlay z-index, prevent scroll, disable main content when sidebar open
-831393c fix(mobile): solid sidebar background, increase overlay opacity
 ```
 
 ---

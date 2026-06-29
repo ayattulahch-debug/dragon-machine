@@ -4,42 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dragon Machine - Dashboard</title>
-    <!-- Tailwind Config -->
-    <script>
-        window.tailwind = { config: {
-            corePlugins: { preflight: false },
-            darkMode: "class",
-            theme: { extend: {
-                colors: {
-                    "surface-dim": "#0d1117", "secondary-container": "#3fb950", "secondary": "#79c0ff",
-                    "surface-container-low": "#161b22", "on-background": "#e6edf3", "background": "#0d1117",
-                    "on-surface": "#e6edf3", "on-secondary": "#0d1117",
-                    "primary-container": "#58a6ff", "error": "#f7787c",
-                    "outline-variant": "#30363d", "surface-tint": "#79c0ff",
-                    "primary": "#58a6ff", "surface-container-highest": "#282e36",
-                    "surface-bright": "#30363d",
-                    "surface-container": "#161b22", "on-primary": "#0d1117",
-                    "surface-container-high": "#21262d",
-                    "surface-variant": "#30363d", "on-surface-variant": "#c9d1d9",
-                    "on-tertiary": "#0d1117", "tertiary": "#8b949e",
-                    "on-primary-fixed-variant": "#0a3069"
-                },
-                borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" },
-                spacing: { md: "16px", lg: "24px", sm: "8px", "margin-mobile": "16px", xl: "32px", "margin-desktop": "32px", xs: "4px", base: "4px", "2xl": "48px", gutter: "20px" },
-                fontFamily: { "label-md": ["JetBrains Mono"], "body-md": ["Inter"], "headline-md": ["Hanken Grotesk"], "headline-lg": ["Hanken Grotesk"], "display-lg": ["Hanken Grotesk"], "label-sm": ["JetBrains Mono"] },
-                fontSize: {
-                    "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "500" }],
-                    "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "600" }],
-                    "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
-                    "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
-                    "headline-md": ["24px", { lineHeight: "32px", fontWeight: "600" }],
-                    "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500" }]
-                }
-            }}
-        }}
-    </script>
-    <!-- Tailwind CDN -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Tailwind CSS (statis, hasil build CLI) -->
+    <link rel="stylesheet" href="/css/tailwind.css">
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -340,6 +306,10 @@
                     <span class="material-symbols-outlined" style="font-size: 20px;">history</span>
                     <span style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;">Riwayat Transaksi</span>
                 </a>
+                <a class="nav-link" id="nav-menu-eksternal" href="#" onclick="switchView('menu-eksternal', this); renderMenuEksternal(); closeMenu()">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">link</span>
+                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;">Menu Eksternal</span>
+                </a>
                 <div class="pt-md pb-xs px-md mt-3">
                     <p style="font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em;">Laporan Gudang</p>
                 </div>
@@ -469,16 +439,16 @@
                                 </div>
                                 <span class="material-symbols-outlined" style="color: var(--text-muted); font-size: 20px; position: absolute; right: 14px; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(3px)'" onmouseout="this.style.transform=''">arrow_forward</span>
                             </button>
-                            <button class="d-flex align-items-center justify-content-between p-3 rounded-xl border cursor-pointer master-only position-relative" id="card-persetujuan-cepat" style="background: var(--bg-elevated); border-color: var(--border); display:none; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);" onmouseover="this.style.background='rgba(63,185,80,0.08)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--bg-elevated)'; this.style.boxShadow='none'; this.style.transform=''" onclick="switchView('persetujuan', document.getElementById('nav-persetujuan')); closeMenu()">
+                            <button class="d-flex align-items-center justify-content-between gap-2 p-3 rounded-xl border cursor-pointer master-only position-relative flex-wrap" id="card-persetujuan-cepat" style="background: var(--bg-elevated); border-color: var(--border); display:none; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);" onmouseover="this.style.background='rgba(63,185,80,0.08)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--bg-elevated)'; this.style.boxShadow='none'; this.style.transform=''" onclick="switchView('persetujuan', document.getElementById('nav-persetujuan')); closeMenu()">
                                 <div class="d-flex align-items-center gap-3">
-                                    <div style="background: rgba(63,185,80,0.12); padding: 10px; border-radius: 10px;">
+                                    <div style="background: rgba(63,185,80,0.12); padding: 10px; border-radius: 10px; flex-shrink: 0;">
                                         <span class="material-symbols-outlined" style="color: var(--success); font-size: 26px;">fact_check</span>
                                     </div>
                                     <span style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; color: var(--text);">Persetujuan Permintaan</span>
                                 </div>
-                                <div class="d-flex align-items-center gap-2" style="position: absolute; right: 14px;">
-                                    <span id="txt-persetujuan-cepat" style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; background: rgba(247,120,124,0.15); color: var(--danger); padding: 3px 8px; border-radius: 6px;">0 Pending</span>
-                                    <span class="material-symbols-outlined" style="color: var(--text-muted); font-size: 20px; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(3px)'" onmouseout="this.style.transform=''">arrow_forward</span>
+                                <div class="d-flex align-items-center gap-2 ms-auto flex-shrink-0">
+                                    <span id="txt-persetujuan-cepat" style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; background: rgba(247,120,124,0.15); color: var(--danger); padding: 3px 8px; border-radius: 6px; white-space: nowrap;">0 permintaan menunggu</span>
+                                    <span class="material-symbols-outlined" style="color: var(--text-muted); font-size: 20px; transition: transform 0.2s; flex-shrink: 0;" onmouseover="this.style.transform='translateX(3px)'" onmouseout="this.style.transform=''">arrow_forward</span>
                                 </div>
                             </button>
                         </div>
@@ -812,6 +782,15 @@
                 </div>
             </div>
             </div>
+
+            <!-- Page: Menu Eksternal -->
+            <div id="page-menu-eksternal" class="page-content" style="display: none;">
+                <header class="mb-4">
+                    <h2 style="font-family: 'Inter', sans-serif; font-size: 24px; line-height: 32px; font-weight: 700; color: var(--text-heading);">Menu Eksternal</h2>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text-muted);">Akses cepat ke layanan & tautan eksternal yang dikonfigurasi administrator.</p>
+                </header>
+                <div id="grid-menu-eksternal" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+            </div>
         </main>
     </div>
 
@@ -992,7 +971,7 @@
 
     <!-- MODAL: Pengaturan Sistem (Dashboard & Logo & Tema) -->
     <div class="modal fade" id="modalDashboardSettings" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-sm">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="bi bi-sliders"></i> Pengaturan Sistem</h5>
@@ -1050,6 +1029,44 @@
                         <i class="bi bi-arrow-repeat"></i> Sinkronkan Stok ke Spreadsheet
                     </button>
                     <p class="text-muted mt-1 mb-0" style="font-size: 0.7rem; line-height: 1.2;">Gunakan fitur ini jika Anda mem-paste data secara manual di file Google Sheet agar angka "Sisa Stok" dikalkulasi & dirapikan kembali oleh sistem.</p>
+
+                    <hr class="border-secondary" style="border-color: var(--border-main) !important;">
+
+                    <!-- Pengaturan Menu Eksternal -->
+                    <p class="small fw-bold mb-1" style="color: var(--text-header);">Pengaturan Menu Eksternal:</p>
+                    <p class="text-muted mb-2" style="font-size: 0.72rem; line-height: 1.3;">Tambah, ubah ikon, atau hapus tombol tautan yang tampil di menu <b>Menu Eksternal</b> pada sidebar.</p>
+
+                    <div id="list-menu-eksternal" class="mb-2"></div>
+
+                    <button class="btn btn-sm btn-outline-primary w-100 mb-3" onclick="openFormMenuEksternal(null)"><i class="bi bi-plus-circle"></i> Tambah Tautan</button>
+
+                    <div id="form-menu-eksternal-wrap" style="display:none;" class="p-3 rounded-3 mb-3">
+                        <input type="hidden" id="form-menu-eksternal-id">
+                        <div class="row g-2">
+                            <div class="col-md-5">
+                                <label class="form-label small">Label / Nama Tombol</label>
+                                <input type="text" class="form-control form-control-sm" id="form-menu-eksternal-label" placeholder="Contoh: Google Drive">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">Ikon</label>
+                                <select class="form-select form-select-sm" id="form-menu-eksternal-icon" onchange="updatePreviewMenuEksternal()"></select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <div class="d-flex align-items-center gap-2 px-2 py-1 rounded w-100" style="background: var(--bg-elevated); border: 1px solid var(--border);">
+                                    <span class="material-symbols-outlined" id="preview-menu-eksternal-icon" style="color: var(--accent); font-size: 22px;">link</span>
+                                    <span class="small" style="color: var(--text-muted);">Pratinjau</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <label class="form-label small">URL / Tautan Tujuan</label>
+                            <input type="url" class="form-control form-control-sm" id="form-menu-eksternal-url" placeholder="https://contoh.com">
+                        </div>
+                        <div class="d-flex gap-2 mt-3">
+                            <button class="btn btn-sm btn-success flex-grow-1" onclick="simpanMenuEksternal()"><i class="bi bi-check-circle"></i> Simpan Tautan</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="cancelFormMenuEksternal()">Batal</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal">Selesai</button>
@@ -1421,6 +1438,7 @@ function loadDataAndStart() {
         renderUI();
         loadLogo();
         loadPengaturanTtd();
+        renderMenuEksternal();
       } catch (e) {
         console.error(e);
         try { Swal.fire('Error', e.message || 'Terjadi kesalahan saat render', 'error'); } catch (x) {}
@@ -1704,6 +1722,7 @@ function updateDropdownTahun() {
 // --- PENGATURAN DASHBOARD ---
 function openDashboardSettings() {
   if (modalDashboard) modalDashboard.show();
+  try { initIconPickerMenuEksternal(); renderListMenuEksternal(); } catch (e) { console.error(e); }
 }
 function applyDashboardSettings() {
   const showTotal = document.getElementById('toggle-card-total').checked;
@@ -1712,6 +1731,146 @@ function applyDashboardSettings() {
   document.getElementById('card-total-item').style.display = showTotal ? '' : 'none';
   document.getElementById('card-stok-aman').style.display = showAman ? '' : 'none';
   document.getElementById('card-stok-kritis').style.display = showKritis ? '' : 'none';
+}
+
+// --- MENU EKSTERNAL ---
+const MENU_EKSTERNAL_ICONS = ['link','open_in_new','public','cloud','folder_open','description','article','menu_book','school','science','biotech','chemistry','experiment','medication','health_and_safety','inventory','table_chart','bar_chart','analytics','insights','computer','database','download','upload','mail','calendar_month','support_agent','settings','info','warning'];
+
+function initIconPickerMenuEksternal() {
+  var sel = document.getElementById('form-menu-eksternal-icon');
+  if (!sel || sel.options.length > 0) return;
+  MENU_EKSTERNAL_ICONS.forEach(function(name) {
+    var o = document.createElement('option');
+    o.value = name; o.textContent = name;
+    sel.appendChild(o);
+  });
+}
+
+function getMenuEksternalData() {
+  try {
+    var raw = (db.settings && db.settings.menu_eksternal) ? db.settings.menu_eksternal : '[]';
+    var arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) { return []; }
+}
+
+function renderMenuEksternal() {
+  var grid = document.getElementById('grid-menu-eksternal');
+  if (!grid) return;
+  var links = getMenuEksternalData();
+  if (links.length === 0) {
+    grid.innerHTML = '<div class="col-span-full text-center py-5"><span class="material-symbols-outlined" style="font-size:48px;color:var(--text-muted);">link_off</span><p style="font-family:\'Inter\',sans-serif;color:var(--text-muted);margin-top:12px;">Belum ada tautan eksternal yang dikonfigurasi.</p><p class="small" style="color:var(--text-muted);">Administrator dapat menambahkan via <b>Pengaturan Sistem</b>.</p></div>';
+    return;
+  }
+  var html = '';
+  links.forEach(function(l) {
+    var icon = l.icon || 'link';
+    var label = escapeHTML(l.label || 'Tautan');
+    var url = l.url || '#';
+    html += '<a href="' + escapeHTML(url) + '" target="_blank" rel="noopener noreferrer" class="glass-panel rounded-2xl p-4 d-flex flex-column align-items-center text-center text-decoration-none hover-lift" style="border:1px solid var(--border);color:var(--text);">' +
+      '<span class="material-symbols-outlined" style="font-size:32px;color:var(--accent);background:var(--accent-light);padding:12px;border-radius:12px;margin-bottom:10px;">' + icon + '</span>' +
+      '<span style="font-family:\'Inter\',sans-serif;font-size:14px;font-weight:600;color:var(--text-heading);">' + label + '</span>' +
+      '<span class="small mt-1 text-truncate w-100" style="color:var(--text-muted);">' + escapeHTML(url) + '</span>' +
+      '</a>';
+  });
+  grid.innerHTML = html;
+}
+
+function renderListMenuEksternal() {
+  var box = document.getElementById('list-menu-eksternal');
+  if (!box) return;
+  var links = getMenuEksternalData();
+  if (links.length === 0) {
+    box.innerHTML = '<p class="text-muted small mb-0">Belum ada tautan. Klik "Tambah Tautan" untuk membuat baru.</p>';
+    return;
+  }
+  var html = '';
+  links.forEach(function(l, i) {
+    html += '<div class="d-flex align-items-center gap-2 py-2 border-bottom" style="border-color:var(--border-light) !important;">' +
+      '<span class="material-symbols-outlined" style="color:var(--accent);font-size:22px;flex-shrink:0;">' + (l.icon || 'link') + '</span>' +
+      '<div class="flex-grow-1 min-w-0">' +
+        '<div style="font-family:\'Inter\',sans-serif;font-size:13px;font-weight:600;color:var(--text);">' + escapeHTML(l.label || '') + '</div>' +
+        '<div class="small text-truncate" style="color:var(--text-muted);">' + escapeHTML(l.url || '') + '</div>' +
+      '</div>' +
+      '<button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="openFormMenuEksternal(' + i + ')" title="Edit"><i class="bi bi-pencil"></i></button>' +
+      '<button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="hapusMenuEksternal(' + i + ')" title="Hapus"><i class="bi bi-trash"></i></button>' +
+    '</div>';
+  });
+  box.innerHTML = html;
+}
+
+function openFormMenuEksternal(id) {
+  initIconPickerMenuEksternal();
+  var links = getMenuEksternalData();
+  var link = (id != null && id >= 0 && id < links.length) ? links[id] : { label: '', icon: 'link', url: '' };
+  document.getElementById('form-menu-eksternal-id').value = (id != null ? id : '');
+  document.getElementById('form-menu-eksternal-label').value = link.label || '';
+  document.getElementById('form-menu-eksternal-url').value = link.url || '';
+  var sel = document.getElementById('form-menu-eksternal-icon');
+  if (sel) sel.value = link.icon || 'link';
+  updatePreviewMenuEksternal();
+  document.getElementById('form-menu-eksternal-wrap').style.display = 'block';
+  document.getElementById('form-menu-eksternal-label').focus();
+}
+
+function cancelFormMenuEksternal() {
+  var wrap = document.getElementById('form-menu-eksternal-wrap');
+  if (wrap) wrap.style.display = 'none';
+}
+
+function updatePreviewMenuEksternal() {
+  var sel = document.getElementById('form-menu-eksternal-icon');
+  var prev = document.getElementById('preview-menu-eksternal-icon');
+  if (sel && prev) prev.textContent = sel.value || 'link';
+}
+
+function simpanMenuEksternal() {
+  var idRaw = document.getElementById('form-menu-eksternal-id').value;
+  var label = document.getElementById('form-menu-eksternal-label').value.trim();
+  var url = document.getElementById('form-menu-eksternal-url').value.trim();
+  var icon = (document.getElementById('form-menu-eksternal-icon').value || 'link');
+  if (!label) { Swal.fire('Validasi', 'Label tautan wajib diisi.', 'warning'); return; }
+  if (!url) { Swal.fire('Validasi', 'URL tautan wajib diisi.', 'warning'); return; }
+  var links = getMenuEksternalData();
+  if (idRaw === '') {
+    links.push({ label: label, icon: icon, url: url });
+  } else {
+    var idx = parseInt(idRaw);
+    if (isNaN(idx) || idx < 0 || idx >= links.length) { Swal.fire('Error', 'Index tidak valid.', 'error'); return; }
+    links[idx] = { label: label, icon: icon, url: url };
+  }
+  simpanMenuEksternalKeServer(links);
+}
+
+function hapusMenuEksternal(id) {
+  var links = getMenuEksternalData();
+  if (id == null || id < 0 || id >= links.length) return;
+  var link = links[id];
+  Swal.fire({
+    title: 'Hapus tautan?',
+    text: '"' + (link.label || 'Tautan') + '" akan dihapus dari Menu Eksternal.',
+    icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal', confirmButtonColor: '#dc3545'
+  }).then(function(r) {
+    if (r.isConfirmed) {
+      links.splice(id, 1);
+      simpanMenuEksternalKeServer(links);
+    }
+  });
+}
+
+function simpanMenuEksternalKeServer(links) {
+  startLoading();
+  api('saveSetting', { key: 'menu_eksternal', value: JSON.stringify(links) }).then(function(res) {
+    if (res && res.settings) db.settings = res.settings;
+    endLoading();
+    cancelFormMenuEksternal();
+    renderListMenuEksternal();
+    renderMenuEksternal();
+    Swal.fire('Berhasil', 'Pengaturan Menu Eksternal tersimpan.', 'success');
+  }).catch(function(err) {
+    endLoading();
+    Swal.fire('Error', err.message || 'Gagal menyimpan.', 'error');
+  });
 }
 
 // --- RENDER UI ---

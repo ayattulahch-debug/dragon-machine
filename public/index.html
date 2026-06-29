@@ -383,7 +383,7 @@
         </header>
 
         <!-- Main Content -->
-        <main class="flex-1 px-4 md:px-6 pb-lg overflow-x-hidden relative min-h-screen" style="background: var(--bg-body); padding-top: 74px;">
+        <main class="flex-1 px-4 md:px-6 pb-lg overflow-x-hidden relative" style="background: var(--bg-body); padding-top: 74px;">
             
             <!-- Background Accents -->
             <div class="absolute top-0 right-0 w-96 h-96 rounded-full pointer-events-none -z-10" style="background: rgba(88,166,255,0.04); filter: blur(120px);"></div>
@@ -820,7 +820,7 @@
                                     <label class="form-label" style="font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px;">Nama Tombol</label>
                                     <input type="text" id="input-name" required placeholder="Cth: Web Perusahaan" class="form-control form-control-sm" style="background: var(--bg-card); border-color: var(--border); color: var(--text);">
                                 </div>
-                                <div class="col-md-5">
+                                <div class="col-md-4">
                                     <label class="form-label" style="font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px;">Tautan (URL)</label>
                                     <input type="url" id="input-url" required placeholder="https://..." class="form-control form-control-sm" style="background: var(--bg-card); border-color: var(--border); color: var(--text);">
                                 </div>
@@ -843,6 +843,10 @@
                                         <option value="fa-flask">Flask</option>
                                         <option value="fa-gear">Settings</option>
                                     </select>
+                                </div>
+                                <div class="col-md-1">
+                                    <label class="form-label" style="font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px;">Warna</label>
+                                    <input type="color" id="input-icon-color" value="#58a6ff" class="form-control form-control-sm p-0" style="background: var(--bg-card); border-color: var(--border); width: 100%; height: 31px; cursor: pointer;">
                                 </div>
                                 <div class="col-md-2">
                                     <button type="submit" class="btn btn-sm w-100" style="background: var(--accent); color: #fff; font-weight: 500;">
@@ -1811,11 +1815,12 @@ function renderExternalGrid() {
   var html = '';
   linksData.forEach(function(link) {
     var icon = link.icon || 'fa-globe';
+    var color = link.color || '#58a6ff';
     var name = escapeHTML(link.name || 'Tautan');
     var url = escapeHTML(link.url || '#');
-    html += '<a href="' + url + '" target="_blank" rel="noopener noreferrer" class="d-flex flex-column align-items-center text-center text-decoration-none p-6 rounded-3" style="background: var(--bg-card); border: 1px solid var(--border); color: var(--text); transition: all 0.2s ease; position: relative; overflow: hidden;" onmouseover="this.style.borderColor=\'var(--accent)\';this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 8px 24px rgba(88,166,255,0.12)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.transform=\'none\';this.style.boxShadow=\'none\'">' +
-      '<div style="width: 64px; height: 64px; border-radius: 16px; background: var(--bg-elevated); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; transition: all 0.2s ease;">' +
-        '<i class="fa-solid ' + icon + '" style="font-size: 24px; color: var(--text-muted);"></i>' +
+    html += '<a href="' + url + '" target="_blank" rel="noopener noreferrer" class="d-flex flex-column align-items-center text-center text-decoration-none p-6 rounded-3" style="background: var(--bg-card); border: 1px solid var(--border); color: var(--text); transition: all 0.2s ease; position: relative; overflow: hidden;" onmouseover="this.style.borderColor=\'' + color + '\';this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 8px 24px ' + color + '22\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.transform=\'none\';this.style.boxShadow=\'none\'">' +
+      '<div style="width: 64px; height: 64px; border-radius: 16px; background: ' + color + '18; border: 1px solid ' + color + '33; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; transition: all 0.2s ease;">' +
+        '<i class="fa-solid ' + icon + '" style="font-size: 24px; color: ' + color + ';"></i>' +
       '</div>' +
       '<h3 style="font-size: 16px; font-weight: 600; color: var(--text-heading); margin: 0 0 4px 0;">' + name + '</h3>' +
       '<p style="font-size: 12px; color: var(--text-muted); margin: 0; opacity: 0; transition: opacity 0.2s ease;">Buka Tautan <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i></p>' +
@@ -1834,10 +1839,11 @@ function renderExternalTable() {
   var html = '';
   linksData.forEach(function(link) {
     var icon = link.icon || 'fa-globe';
+    var color = link.color || '#58a6ff';
     var name = escapeHTML(link.name || '');
     var url = escapeHTML(link.url || '');
     html += '<tr style="border-bottom: 1px solid var(--border);">' +
-      '<td class="text-center py-2"><div style="width: 32px; height: 32px; border-radius: 6px; background: var(--bg-elevated); display: flex; align-items: center; justify-content: center; margin: 0 auto;"><i class="fa-solid ' + icon + '" style="font-size: 14px; color: var(--accent);"></i></div></td>' +
+      '<td class="text-center py-2"><div style="width: 32px; height: 32px; border-radius: 6px; background: ' + color + '18; border: 1px solid ' + color + '33; display: flex; align-items: center; justify-content: center; margin: 0 auto;"><i class="fa-solid ' + icon + '" style="font-size: 14px; color: ' + color + ';"></i></div></td>' +
       '<td class="py-2" style="font-weight: 600; color: var(--text);">' + name + '</td>' +
       '<td class="py-2"><a href="' + url + '" target="_blank" class="text-decoration-none" style="color: var(--accent); font-size: 13px;">' + url + ' <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px;"></i></a></td>' +
       '<td class="py-2 text-end"><button class="btn btn-sm py-0 px-2" style="color: var(--text-muted);" onclick="deleteLink(' + link.id + ')" title="Hapus"><i class="fa-solid fa-trash" style="font-size: 14px;"></i></button></td>' +
@@ -1881,13 +1887,15 @@ document.addEventListener('DOMContentLoaded', function() {
       var nameInput = document.getElementById('input-name');
       var urlInput = document.getElementById('input-url');
       var iconInput = document.getElementById('input-icon');
+      var colorInput = document.getElementById('input-icon-color');
       if (!nameInput || !urlInput) return;
       var name = nameInput.value.trim();
       var url = urlInput.value.trim();
       var icon = iconInput ? iconInput.value : 'fa-globe';
+      var color = colorInput ? colorInput.value : '#58a6ff';
       if (!name) { Swal.fire('Validasi', 'Nama tombol wajib diisi.', 'warning'); return; }
       if (!url) { Swal.fire('Validasi', 'URL tautan wajib diisi.', 'warning'); return; }
-      linksData.push({ id: Date.now(), name: name, url: url, icon: icon });
+      linksData.push({ id: Date.now(), name: name, url: url, icon: icon, color: color });
       saveLinksToServer();
       form.reset();
     });

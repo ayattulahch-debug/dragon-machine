@@ -76,7 +76,7 @@ Urutan baku setiap permintaan perubahan:
 ## 3. STATUS TERAKHIR (update tiap selesai perubahan)
 
 **Tanggal:** 29 Jun 2026
-**Commit terakhir:** commit ini — `refactor(frontend): ganti Tailwind CDN dengan CSS statis + Menu Eksternal + fix mobile Quick Actions`
+**Commit terakhir:** `581373f` — `refactor(menu-eksternal): redesign dengan Font Awesome + admin section di halaman + hapus dari modal settings`
 **Branch:** `main` (sync dengan `origin/main`)
 **Status deploy:** Push terkirim → Railway rebuild ter-trigger. Pantau di dashboard Railway.
 
@@ -86,8 +86,10 @@ Urutan baku setiap permintaan perubahan:
 - [x] Hapus file tidak penting: `fly.toml`, `adminer-5.4.2.php`, `adminer-5.4.2-mysql.php`, log `server-*.log`, stale `server/node_modules/`.
 - [x] Fix layout mobile Quick Actions "Persetujuan Permintaan": hapus absolute positioning, gunakan flex-wrap agar badge tidak menumpuk teks di layar sempit.
 - [x] Tambah sidebar menu **Menu Eksternal** (di atas kategori Laporan Gudang) untuk semua role.
-- [x] Tambah page `page-menu-eksternal` dengan grid kartu tautan.
-- [x] Integrasi pengaturan tautan di dalam modal **Pengaturan Sistem** (Master only): CRUD tautan dengan label, icon picker, URL. Data disimpan di `settings.menu_eksternal` (JSON).
+- [x] Redesign halaman Menu Eksternal: grid kartu tautan + admin section (Master only) langsung di halaman (bukan di modal).
+- [x] Ganti ikon Material Symbols → Font Awesome 6 (`fa-globe`, `fa-link`, `fa-server`, dll) untuk link eksternal.
+- [x] Hapus pengaturan Menu Eksternal dari modal Pengaturan Sistem (kembalikan ke `modal-sm`).
+- [x] Simplifikasi JS: `linksData` array state, `renderExternalMenu()`, form submit handler, `deleteLink()`, `saveLinksToServer()`.
 - [x] Verifikasi lokal: server boots HTTP 200, login + getAllData + saveSetting OK, tidak ada stderr.
 
 ### Yang belum / TODO
@@ -98,9 +100,9 @@ Urutan baku setiap permintaan perubahan:
 
 ### Riwayat commit (3 terakhir)
 ```
-(refactor/frontend commit ini) refactor(frontend): ganti Tailwind CDN dengan CSS statis + Menu Eksternal + fix mobile Quick Actions
+581373f refactor(menu-eksternal): redesign dengan Font Awesome + admin section di halaman + hapus dari modal settings
+fa51cd3 refactor(frontend): ganti Tailwind CDN dengan CSS statis + Menu Eksternal + fix mobile Quick Actions
 151e56c feat(profil): redesign modal pengaturan profil + fix urutan riwayat
-5944c6c fix(mobile): increase overlay z-index, prevent scroll, disable main content when sidebar open
 ```
 
 ---

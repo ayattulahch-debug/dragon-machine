@@ -76,7 +76,7 @@ Urutan baku setiap permintaan perubahan:
 ## 3. STATUS TERAKHIR (update tiap selesai perubahan)
 
 **Tanggal:** 29 Jun 2026
-**Commit terakhir:** `581373f` — `refactor(menu-eksternal): redesign dengan Font Awesome + admin section di halaman + hapus dari modal settings`
+**Commit terakhir:** `cd85257` — `fix(menu-eksternal): hapus min-h-screen + tambah color picker ikon`
 **Branch:** `main` (sync dengan `origin/main`)
 **Status deploy:** Push terkirim → Railway rebuild ter-trigger. Pantau di dashboard Railway.
 
@@ -90,6 +90,8 @@ Urutan baku setiap permintaan perubahan:
 - [x] Ganti ikon Material Symbols → Font Awesome 6 (`fa-globe`, `fa-link`, `fa-server`, dll) untuk link eksternal.
 - [x] Hapus pengaturan Menu Eksternal dari modal Pengaturan Sistem (kembalikan ke `modal-sm`).
 - [x] Simplifikasi JS: `linksData` array state, `renderExternalMenu()`, form submit handler, `deleteLink()`, `saveLinksToServer()`.
+- [x] Tambah color picker (`input type="color"`) di form admin — setiap ikon bisa punya warna custom sendiri.
+- [x] Hapus `min-h-screen` dari `<main>` — fix layout ruang kosong berlebih di halaman Menu Eksternal.
 - [x] Verifikasi lokal: server boots HTTP 200, login + getAllData + saveSetting OK, tidak ada stderr.
 
 ### Yang belum / TODO
@@ -100,9 +102,9 @@ Urutan baku setiap permintaan perubahan:
 
 ### Riwayat commit (3 terakhir)
 ```
+cd85257 fix(menu-eksternal): hapus min-h-screen + tambah color picker ikon
+6711384 chore(docs): update AGENTS.md status setelah redesign Menu Eksternal
 581373f refactor(menu-eksternal): redesign dengan Font Awesome + admin section di halaman + hapus dari modal settings
-fa51cd3 refactor(frontend): ganti Tailwind CDN dengan CSS statis + Menu Eksternal + fix mobile Quick Actions
-151e56c feat(profil): redesign modal pengaturan profil + fix urutan riwayat
 ```
 
 ---

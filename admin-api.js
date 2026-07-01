@@ -53,8 +53,6 @@ router.post('/table/:name', (req, res) => {
     const total = totalResult.c;
     const totalPages = Math.ceil(total / limit);
 
-    const rows = db.prepare(`SELECT * FROM "${tableName}" ${whereClause} ORDER BY rowid DESC LIMIT ? OFFSET ?`).all(...params, limit, offset);
-
     const columns = db.prepare(`PRAGMA table_info("${tableName}")`).all().map(c => ({
       name: c.name,
       type: c.type,
@@ -63,7 +61,12 @@ router.post('/table/:name', (req, res) => {
       dflt_value: c.dflt_value
     }));
 
-    res.json({ rows, columns, total, page, limit, totalPages });
+    const hasSortOrder = columns.some(c => c.name === 'sort_order');
+    const orderBy = hasSortOrder ? 'sort_order ASC, rowid DESC' : 'rowid DESC';
+
+    const rows = db.prepare(`SELECT * FROM "${tableName}" ${whereClause} ORDER BY ${orderBy} LIMIT ? OFFSET ?`).all(...params, limit, offset);
+
+    res.json({ rows, columns, total, page, limit, totalPages, hasSortOrder });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -164,6 +167,32 @@ router.post('/row/delete-batch', (req, res) => {
     const placeholders = pkValues.map(() => '?').join(', ');
     db.prepare(`DELETE FROM "${table}" WHERE "${pkColumn}" IN (${placeholders})`).run(...pkValues);
     res.json({ success: true, deleted: pkValues.length });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.post('/row/reorder', (req, res) => {
+  try {
+    const { table, column, pkColumn, rowValues } = req.body;
+    if (!table || !column || !pkColumn || !Array.isArray(rowValues) || rowValues.length !== 2) {
+      return res.status(400).json({ error: 'Parameter tidak lengkap. Butuh 2 rowValues.' });
+    }
+
+    const safeTables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all().map(t => t.name);
+    if (!safeTables.includes(table)) return res.status(400).json({ error: 'Tabel tidak ditemukan.' });
+
+    var sortCols = db.prepare(`PRAGMA table_info("${table}")`).all().map(function(c) { return c.name; });
+    if (!sortCols.includes('sort_order')) return res.status(400).json({ error: 'Tabel tidak memiliki kolom sort_order.' });
+
+    var rowA = db.prepare(`SELECT sort_order FROM "${table}" WHERE "${pkColumn}" = ?`).get(rowValues[0]);
+    var rowB = db.prepare(`SELECT sort_order FROM "${table}" WHERE "${pkColumn}" = ?`).get(rowValues[1]);
+    if (!rowA || !rowB) return res.status(400).json({ error: 'Baris tidak ditemukan.' });
+
+    db.prepare(`UPDATE "${table}" SET sort_order = ? WHERE "${pkColumn}" = ?`).run(rowB.sort_order, rowValues[0]);
+    db.prepare(`UPDATE "${table}" SET sort_order = ? WHERE "${pkColumn}" = ?`).run(rowA.sort_order, rowValues[1]);
+
+    res.json({ success: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

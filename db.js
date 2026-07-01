@@ -108,6 +108,13 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_bk_idbahan ON barang_keluar(id_bahan);
 `);
 
+// Migrasi: tambah kolom sort_order di bahan untuk fitur naik/turun baris
+try { db.exec("ALTER TABLE bahan ADD COLUMN sort_order INTEGER DEFAULT 0"); } catch (e) { /* sudah ada */ }
+// Seed sort_order untuk baris yang masih 0 (berdasarkan rowid)
+try {
+  db.exec("UPDATE bahan SET sort_order = rowid WHERE sort_order = 0 OR sort_order IS NULL");
+} catch (e) { /* non-critical */ }
+
 // Migrasi: tambah kolom permintaan_id di barang_keluar jika belum ada
 try { db.exec("ALTER TABLE barang_keluar ADD COLUMN permintaan_id INTEGER"); } catch (e) { /* sudah ada */ }
 

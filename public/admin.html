@@ -138,6 +138,8 @@ let selectedRows = new Set();
 let tableSchemas = {};
 let authToken = '';
 let allTables = [];
+let currentHasSortOrder = false;
+let allRowsData = [];
 
 function getToken() {
   return localStorage.getItem('token') || authToken;
@@ -207,6 +209,8 @@ async function loadTableData() {
   if (data.error) { alert(data.error); return; }
 
   currentPK = data.columns.find(c => c.pk)?.name || data.columns[0]?.name || '';
+  currentHasSortOrder = data.hasSortOrder || false;
+  allRowsData = data.rows || [];
 
   renderDataTable(data);
   renderPagination(data);
@@ -235,17 +239,25 @@ function renderDataTable(data) {
   data.rows.forEach((row, i) => {
     const pkVal = String(row[pk] || '');
     const isSelected = selectedRows.has(pkVal);
-    html += `<tr data-pk="${pkVal}">`;
+    const rowIndex = (currentPage - 1) * parseInt(document.getElementById('limitSelect').value) + i;
+    html += `<tr data-pk="${pkVal}" data-idx="${rowIndex}">`;
     html += `<td><input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleRow('${pkVal}')"></td>`;
-    html += `<td style="color:var(--text2)">${(currentPage - 1) * parseInt(document.getElementById('limitSelect').value) + i + 1}</td>`;
+    html += `<td style="color:var(--text2)">${rowIndex + 1}</td>`;
     data.columns.forEach(c => {
       const val = row[c.name];
       const isPK = c.pk;
       const display = val === null ? '<span class="null-val">NULL</span>' : escapeHtml(String(val));
-      const cls = isPK ? 'pk' : 'edit-cell';
-      html += `<td class="${cls}" ${!isPK ? `ondblclick="editCell(this,'${escapeAttr(c.name)}','${escapeAttr(pk)}','${escapeAttr(pkVal)}')"` : ''}>${display}</td>`;
+      const cls = isPK ? 'pk' : (c.name === 'sort_order' ? '' : 'edit-cell');
+      const dblclick = (!isPK && c.name !== 'sort_order') ? `ondblclick="editCell(this,'${escapeAttr(c.name)}','${escapeAttr(pk)}','${escapeAttr(pkVal)}')"` : '';
+      html += `<td class="${cls}" ${dblclick}>${display}</td>`;
     });
-    html += `<td><button class="btn btn-danger btn-sm" onclick="deleteRow('${escapeAttr(pkVal)}')">Hapus</button></td>`;
+    html += '<td><div style="display:flex;gap:4px;align-items:center;">';
+    html += '<button class="btn btn-danger btn-sm" onclick="deleteRow(\'' + escapeAttr(pkVal) + '\')">Hapus</button>';
+    if (currentHasSortOrder) {
+      html += '<button class="btn btn-ghost btn-sm" onclick="moveRow(\'' + escapeAttr(pkVal) + '\',-1)" title="Naikkan" style="padding:2px 6px;font-size:14px;">&#9650;</button>';
+      html += '<button class="btn btn-ghost btn-sm" onclick="moveRow(\'' + escapeAttr(pkVal) + '\',1)" title="Turunkan" style="padding:2px 6px;font-size:14px;">&#9660;</button>';
+    }
+    html += '</div></td>';
     html += '</tr>';
   });
   html += '</tbody>';
@@ -328,6 +340,22 @@ async function deleteRow(pkValue) {
   selectedRows.delete(String(pkValue));
   loadTableData();
   loadTables();
+}
+
+async function moveRow(pkValue, direction) {
+  const idx = allRowsData.findIndex(function(r) { return String(r[currentPK]) === pkValue; });
+  if (idx === -1) return;
+  const targetIdx = idx + direction;
+  if (targetIdx < 0 || targetIdx >= allRowsData.length) return;
+
+  const res = await api('/row/reorder', {
+    table: currentTable,
+    column: 'sort_order',
+    pkColumn: currentPK,
+    rowValues: [pkValue, String(allRowsData[targetIdx][currentPK])]
+  });
+  if (res.error) { alert(res.error); return; }
+  loadTableData();
 }
 
 async function deleteSelected() {

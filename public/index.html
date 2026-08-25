@@ -319,6 +319,10 @@
                     <span class="material-symbols-outlined" style="font-size: 20px;">download</span>
                     <span style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;">Unduh Sisa Stok (Excel)</span>
                 </a>
+                <a class="nav-link" id="nav-laporan-perbahan" href="#" onclick="switchView('laporan-perbahan', this); initLaporanPerBahan(); closeMenu()">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">science</span>
+                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;">Laporan Per Bahan</span>
+                </a>
                 <div class="pt-md pb-xs px-md mt-3 master-only">
                     <p style="font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em;">Sistem</p>
                 </div>
@@ -783,6 +787,123 @@
                     </div>
                 </div>
             </div>
+            </div>
+
+            <!-- Page: Laporan Per Bahan -->
+            <div id="page-laporan-perbahan" class="page-content" style="display: none;">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card shadow-sm">
+                            <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 py-3">
+                                <span class="fw-bold fs-5"><i class="bi bi-science me-2"></i> Laporan Per Bahan</span>
+                            </div>
+                            <div class="card-body">
+                                <!-- Pilih Bahan -->
+                                <div class="row mb-4 align-items-end">
+                                    <div class="col-md-5">
+                                        <label class="form-label small fw-bold">Cari & Pilih Bahan</label>
+                                        <div class="position-relative">
+                                            <input type="text" class="form-control" id="input-cari-bahan-laporan" placeholder="Ketik nama atau ID bahan..." autocomplete="off">
+                                            <div id="bahan-laporan-suggestions" class="suggestions-box"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small fw-bold">Dari Tanggal</label>
+                                        <input type="date" class="form-control" id="laporan-perbahan-dari" onchange="renderLaporanPerBahan()">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small fw-bold">Sampai Tanggal</label>
+                                        <input type="date" class="form-control" id="laporan-perbahan-sampai" onchange="renderLaporanPerBahan()">
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button class="btn btn-outline-secondary" onclick="resetLaporanPerBahan()" title="Reset"><i class="bi bi-arrow-counterclockwise"></i></button>
+                                    </div>
+                                </div>
+
+                                <!-- Info Bahan Terpilih (hidden by default) -->
+                                <div id="laporan-perbahan-info" style="display:none;">
+                                    <!-- Ringkasan Bahan -->
+                                    <div class="glass-panel rounded-2xl p-4 mb-4" style="border-left: 4px solid var(--accent);">
+                                        <div class="row g-3">
+                                            <div class="col-md-2">
+                                                <small class="text-muted d-block">ID Bahan</small>
+                                                <span id="lpb-id" class="fw-bold" style="color: var(--accent);"></span>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <small class="text-muted d-block">Nama Bahan</small>
+                                                <span id="lpb-nama" class="fw-bold" style="color: var(--text-heading);"></span>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <small class="text-muted d-block">Satuan</small>
+                                                <span id="lpb-satuan" class="fw-bold" style="color: var(--text);"></span>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <small class="text-muted d-block">Tahun Kontrak</small>
+                                                <span id="lpb-tahun" class="fw-bold" style="color: var(--text);"></span>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <small class="text-muted d-block">Sisa Stok</small>
+                                                <span id="lpb-stok" class="fw-bold" style="color: var(--danger);"></span>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3 pt-3" style="border-top: 1px solid var(--border);">
+                                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                                <small class="text-muted">Total Keluar:</small>
+                                                <span id="lpb-total-keluar" class="fw-bold fs-5" style="color: var(--danger);"></span>
+                                                <span class="text-muted">|</span>
+                                                <small class="text-muted">Jumlah Transaksi:</small>
+                                                <span id="lpb-total-transaksi" class="fw-bold fs-5" style="color: var(--accent);"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Breakdown per Lab -->
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold mb-3" style="color: var(--text-heading);"><i class="bi bi-geo-alt me-1"></i> Breakdown per Lab</h6>
+                                        <div id="lpb-lab-breakdown" class="d-flex flex-wrap gap-2"></div>
+                                    </div>
+
+                                    <!-- Tabel Detail -->
+                                    <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
+                                        <table class="table table-hover table-bordered mb-0 align-middle" style="font-size: 0.88rem;">
+                                            <thead class="table-dark sticky-top">
+                                                <tr>
+                                                    <th class="text-center" style="width:5%;">No</th>
+                                                    <th class="text-center" style="width:15%;">Tanggal</th>
+                                                    <th class="text-center" style="width:22%;">Lab Tujuan</th>
+                                                    <th class="text-center" style="width:13%;">Jumlah</th>
+                                                    <th class="text-center" style="width:13%;">Sisa Stok</th>
+                                                    <th class="text-center" style="width:18%;">Pemohon</th>
+                                                    <th class="text-center" style="width:14%;">No. Riwayat</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tbody-laporan-perbahan">
+                                                <tr><td colspan="7" class="text-center text-muted py-4">Pilih bahan untuk melihat laporan</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Aksi -->
+                                    <div class="mt-3 d-flex gap-2 flex-wrap">
+                                        <button class="btn btn-success" id="btn-cetak-lpb" style="display:none;" onclick="cetakLaporanPerBahan()">
+                                            <i class="bi bi-printer me-1"></i> Cetak Laporan
+                                        </button>
+                                        <button class="btn btn-outline-success" id="btn-excel-lpb" style="display:none;" onclick="downloadLaporanPerBahanExcel()">
+                                            <i class="bi bi-file-earmark-excel me-1"></i> Download Excel
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Empty State -->
+                                <div id="laporan-perbahan-empty" class="text-center py-5">
+                                    <i class="bi bi-science" style="font-size: 48px; color: var(--text-muted); opacity: 0.4;"></i>
+                                    <h5 class="mt-3" style="color: var(--text-muted);">Pilih bahan untuk melihat laporan</h5>
+                                    <p class="small" style="color: var(--text-muted);">Ketik nama atau ID bahan pada kolom pencarian di atas</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Page: Menu Eksternal -->
@@ -1355,6 +1476,60 @@
         </div>
     </div>
 
+    <!-- Cetak Laporan Per Bahan Area -->
+    <div id="print-area-lpb" style="display:none; font-family: 'Times New Roman', Times, serif; color: black; background: white; padding: 30px;">
+        <div style="display: flex; align-items: center; border-bottom: 3px solid black; padding-bottom: 10px; margin-bottom: 10px;">
+            <div style="flex: 0 0 120px; text-align: center;">
+                <img id="print-logo-img-lpb" src="" style="width: 90px; height: 90px; object-fit: contain; margin: 0 auto; display: none;">
+                <div id="print-logo-placeholder-lpb" style="width: 90px; height: 90px; border: 2px solid #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; margin: 0 auto; text-align: center; padding: 5px;">
+                    [Logo<br>UNMUL]
+                </div>
+            </div>
+            <div style="flex: 1; text-align: center;">
+                <h4 style="margin: 0; font-size: 16px; font-weight: normal;">KEMENTERIAN PENDIDIKAN TINGGI, SAINS DAN TEKNOLOGI</h4>
+                <h3 style="margin: 0; font-size: 18px; font-weight: bold;">UNIVERSITAS MULAWARMAN</h3>
+                <h2 style="margin: 0; font-size: 20px; font-weight: bold;">FAKULTAS FARMASI</h2>
+                <p style="margin: 5px 0 0 0; font-size: 12px; line-height: 1.4;">Kampus UNMUL Gunung Kelua Jalan Penajam, Kota Samarinda Kode Pos 75119<br>
+                Telepon dan Faksimile 0541-739491; E-mail: fa_mul@farmasi.unmul.ac.id<br>
+                Laman: www.ff.unmul.ac.id</p>
+            </div>
+        </div>
+        <h3 style="text-align: center; margin-bottom: 5px; font-size: 18px; font-weight: bold; text-decoration: underline;">LAPORAN PER BAHAN</h3>
+        <p style="text-align: center; font-size: 14px; margin-bottom: 5px;" id="print-lpb-bahan-info"></p>
+        <p style="text-align: center; font-size: 13px; margin-bottom: 20px; color: #555;" id="print-lpb-periode"></p>
+
+        <!-- Ringkasan -->
+        <div style="margin-bottom: 15px; font-size: 14px;" id="print-lpb-ringkasan"></div>
+
+        <!-- Tabel Detail -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px;" border="1">
+            <thead>
+                <tr style="background-color: #f0f0f0;">
+                    <th style="border: 1px solid black; padding: 8px; text-align: center; width: 5%;">No</th>
+                    <th style="border: 1px solid black; padding: 8px; text-align: center; width: 14%;">Tanggal</th>
+                    <th style="border: 1px solid black; padding: 8px; text-align: center; width: 22%;">Lab Tujuan</th>
+                    <th style="border: 1px solid black; padding: 8px; text-align: center; width: 12%;">Jumlah</th>
+                    <th style="border: 1px solid black; padding: 8px; text-align: center; width: 12%;">Sisa Stok</th>
+                    <th style="border: 1px solid black; padding: 8px; text-align: center; width: 18%;">Pemohon</th>
+                    <th style="border: 1px solid black; padding: 8px; text-align: center; width: 17%;">No. Riwayat</th>
+                </tr>
+            </thead>
+            <tbody id="tbody-print-lpb"></tbody>
+        </table>
+
+        <!-- Tanda Tangan -->
+        <div style="display: flex; justify-content: space-between; font-size: 14px;">
+            <div style="text-align: center; width: 45%;"></div>
+            <div style="text-align: center; width: 45%;">
+                <p style="margin: 0;" id="print-tgl-lpb"></p>
+                <p style="margin: 0;" id="print-ttd-jabatan-lpb">Penanggung Jawab Gudang,</p>
+                <br><br><br><br>
+                <p style="margin: 0; font-weight: bold; text-decoration: underline;" id="print-ttd-nama-lpb"></p>
+                <p style="margin: 0;">NIP. <span id="print-ttd-nip-lpb"></span></p>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -1638,8 +1813,8 @@ function handleLogoUpload(event) {
 }
 function loadLogo() {
   const logoBase64 = localStorage.getItem('lab_farmasi_logo');
-  const imgEls = [document.getElementById('print-logo-img'), document.getElementById('print-logo-img-laporan')];
-  const placeholderEls = [document.getElementById('print-logo-placeholder'), document.getElementById('print-logo-placeholder-laporan')];
+  const imgEls = [document.getElementById('print-logo-img'), document.getElementById('print-logo-img-laporan'), document.getElementById('print-logo-img-lpb')];
+  const placeholderEls = [document.getElementById('print-logo-placeholder'), document.getElementById('print-logo-placeholder-laporan'), document.getElementById('print-logo-placeholder-lpb')];
   if (logoBase64) {
     imgEls.forEach(el => {
       if (el) {
@@ -1710,6 +1885,10 @@ function terapkanTtd(jabatan, nama, nip) {
   if (printJabatanLap) printJabatanLap.innerText = jabatan + ',';
   if (printNamaLap) printNamaLap.innerText = nama;
   if (printNipLap) printNipLap.innerText = nip;
+  var printNamaLpb = document.getElementById('print-ttd-nama-lpb');
+  var printNipLpb = document.getElementById('print-ttd-nip-lpb');
+  if (printNamaLpb) printNamaLpb.innerText = nama;
+  if (printNipLpb) printNipLpb.innerText = nip;
 }
 
 
@@ -2838,6 +3017,291 @@ function prosesUnduhExcelStok() {
     title: 'Berhasil Diunduh!',
     text: "File " + namaFile + " telah tersimpan di perangkat Anda."
   });
+}
+
+// ==========================================
+// LAPORAN PER BAHAN - FUNGSI
+// ==========================================
+var lpbSelectedBahan = null;
+
+function initLaporanPerBahan() {
+  var inputEl = document.getElementById('input-cari-bahan-laporan');
+  var suggestBox = document.getElementById('bahan-laporan-suggestions');
+  if (!inputEl || !suggestBox) return;
+  inputEl.value = '';
+  suggestBox.innerHTML = '';
+  suggestBox.style.display = 'none';
+  inputEl.oninput = function () {
+    var val = this.value.toLowerCase();
+    suggestBox.innerHTML = '';
+    if (!val) { suggestBox.style.display = 'none'; return; }
+    var matches = db.bahan.filter(function (b) {
+      return b.namaBahan.toLowerCase().includes(val) || b.id.toLowerCase().includes(val);
+    });
+    if (matches.length > 0) {
+      matches.forEach(function (b) {
+        var div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.innerHTML = '<strong>' + escapeHTML(b.namaBahan) + '</strong> ' +
+          '<span class="badge bg-secondary ms-1">' + escapeHTML(b.tahun || '2026') + '</span> ' +
+          '<span class="badge bg-info ms-1">' + escapeHTML(b.id) + '</span>' +
+          '<br><small class="opacity-75">Stok: ' + b.stok + ' ' + escapeHTML(b.satuan) + ' | Rak: ' + escapeHTML(b.lokasi || '-') + '</small>';
+        div.onclick = function () { selectBahanLaporan(b); };
+        suggestBox.appendChild(div);
+      });
+      suggestBox.style.display = 'block';
+    } else {
+      suggestBox.innerHTML = '<div class="p-2 opacity-75 small">Tidak ditemukan</div>';
+      suggestBox.style.display = 'block';
+    }
+  };
+  document.addEventListener('click', function (e) {
+    if (e.target !== inputEl && e.target !== suggestBox) suggestBox.style.display = 'none';
+  });
+}
+
+function selectBahanLaporan(b) {
+  lpbSelectedBahan = b;
+  document.getElementById('input-cari-bahan-laporan').value = b.namaBahan + ' (' + b.id + ')';
+  document.getElementById('bahan-laporan-suggestions').style.display = 'none';
+  renderLaporanPerBahan();
+}
+
+function resetLaporanPerBahan() {
+  lpbSelectedBahan = null;
+  var inputEl = document.getElementById('input-cari-bahan-laporan');
+  if (inputEl) inputEl.value = '';
+  document.getElementById('laporan-perbahan-dari').value = '';
+  document.getElementById('laporan-perbahan-sampai').value = '';
+  document.getElementById('laporan-perbahan-info').style.display = 'none';
+  document.getElementById('laporan-perbahan-empty').style.display = 'block';
+  document.getElementById('btn-cetak-lpb').style.display = 'none';
+  document.getElementById('btn-excel-lpb').style.display = 'none';
+}
+
+function renderLaporanPerBahan() {
+  if (!lpbSelectedBahan) return;
+  var b = lpbSelectedBahan;
+  var dariVal = document.getElementById('laporan-perbahan-dari').value;
+  var sampaiVal = document.getElementById('laporan-perbahan-sampai').value;
+
+  var trxList = db.barangKeluar.filter(function (t) { return t.idBahan === b.id; });
+  if (dariVal) trxList = trxList.filter(function (t) { return t.tanggal >= dariVal; });
+  if (sampaiVal) trxList = trxList.filter(function (t) { return t.tanggal <= sampaiVal; });
+  trxList.sort(function (a, c) { return (c.tanggal || '').localeCompare(a.tanggal || ''); });
+
+  var totalKeluar = trxList.reduce(function (s, t) { return s + (parseInt(t.jumlah) || 0); }, 0);
+
+  document.getElementById('lpb-id').textContent = b.id;
+  document.getElementById('lpb-nama').textContent = b.namaBahan;
+  document.getElementById('lpb-satuan').textContent = b.satuan;
+  document.getElementById('lpb-tahun').textContent = b.tahun || '2026';
+  document.getElementById('lpb-stok').textContent = b.stok + ' ' + b.satuan;
+  document.getElementById('lpb-total-keluar').textContent = totalKeluar + ' ' + b.satuan;
+  document.getElementById('lpb-total-transaksi').textContent = trxList.length + ' transaksi';
+
+  var labMap = {};
+  trxList.forEach(function (t) {
+    var lab = t.tujuanLab || 'Tidak Diketahui';
+    if (!labMap[lab]) labMap[lab] = 0;
+    labMap[lab] += parseInt(t.jumlah) || 0;
+  });
+  var labBreakdown = document.getElementById('lpb-lab-breakdown');
+  labBreakdown.innerHTML = '';
+  Object.keys(labMap).sort(function (a, c) { return labMap[c] - labMap[a]; }).forEach(function (lab) {
+    var pill = document.createElement('span');
+    pill.className = 'badge fs-6 fw-semibold';
+    pill.style.cssText = 'background: var(--accent-light); color: var(--accent); border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px;';
+    pill.textContent = lab + ': ' + labMap[lab] + ' ' + b.satuan;
+    labBreakdown.appendChild(pill);
+  });
+
+  var tbody = document.getElementById('tbody-laporan-perbahan');
+  tbody.innerHTML = '';
+  if (trxList.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Tidak ada transaksi untuk bahan ini' +
+      (dariVal || sampaiVal ? ' pada rentang tanggal yang dipilih' : '') + '.</td></tr>';
+    document.getElementById('laporan-perbahan-info').style.display = 'block';
+    document.getElementById('laporan-perbahan-empty').style.display = 'none';
+    document.getElementById('btn-cetak-lpb').style.display = 'none';
+    document.getElementById('btn-excel-lpb').style.display = 'none';
+    return;
+  }
+  var rows = '';
+  trxList.forEach(function (t, idx) {
+    rows += '<tr>' +
+      '<td class="text-center">' + (idx + 1) + '</td>' +
+      '<td class="text-center"><small>' + escapeHTML(t.tanggal || '-') + '</small></td>' +
+      '<td>' + escapeHTML(t.tujuanLab || '-') + '</td>' +
+      '<td class="text-center fw-bold">' + t.jumlah + '</td>' +
+      '<td class="text-center">' + (t.stok || 0) + '</td>' +
+      '<td>' + escapeHTML(t.pemohon || '-') + '</td>' +
+      '<td class="text-center"><small>' + escapeHTML(t.idRiwayat || '-') + '</small></td>' +
+      '</tr>';
+  });
+  tbody.innerHTML = rows;
+  document.getElementById('laporan-perbahan-info').style.display = 'block';
+  document.getElementById('laporan-perbahan-empty').style.display = 'none';
+  document.getElementById('btn-cetak-lpb').style.display = 'inline-block';
+  document.getElementById('btn-excel-lpb').style.display = 'inline-block';
+}
+
+function cetakLaporanPerBahan() {
+  if (!lpbSelectedBahan) return;
+  var b = lpbSelectedBahan;
+  var dariVal = document.getElementById('laporan-perbahan-dari').value;
+  var sampaiVal = document.getElementById('laporan-perbahan-sampai').value;
+  var trxList = db.barangKeluar.filter(function (t) { return t.idBahan === b.id; });
+  if (dariVal) trxList = trxList.filter(function (t) { return t.tanggal >= dariVal; });
+  if (sampaiVal) trxList = trxList.filter(function (t) { return t.tanggal <= sampaiVal; });
+  trxList.sort(function (a, c) { return (c.tanggal || '').localeCompare(a.tanggal || ''); });
+
+  var totalKeluar = trxList.reduce(function (s, t) { return s + (parseInt(t.jumlah) || 0); }, 0);
+  var monthNames = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+  var tglCetak = new Date().getDate() + ' ' + monthNames[new Date().getMonth()] + ' ' + new Date().getFullYear();
+  var periodeStr = dariVal && sampaiVal ? dariVal + ' s/d ' + sampaiVal : dariVal ? 'Dari ' + dariVal : sampaiVal ? 'Sampai ' + sampaiVal : 'Semua Data';
+
+  document.getElementById('print-lpb-bahan-info').innerHTML = '<strong>' + escapeHTML(b.namaBahan) + '</strong> (' + escapeHTML(b.id) + ') — Tahun ' + escapeHTML(b.tahun || '2026');
+  document.getElementById('print-lpb-periode').innerText = 'Periode: ' + periodeStr;
+  document.getElementById('print-lpb-ringkasan').innerHTML =
+    '<strong>Total Keluar:</strong> ' + totalKeluar + ' ' + escapeHTML(b.satuan) +
+    ' &nbsp;|&nbsp; <strong>Sisa Stok:</strong> ' + b.stok + ' ' + escapeHTML(b.satuan) +
+    ' &nbsp;|&nbsp; <strong>Jumlah Transaksi:</strong> ' + trxList.length;
+
+  var tbodyPrint = document.getElementById('tbody-print-lpb');
+  tbodyPrint.innerHTML = '';
+  var rows = '';
+  trxList.forEach(function (t, idx) {
+    rows += '<tr>' +
+      '<td style="border:1px solid black;padding:6px;text-align:center;">' + (idx + 1) + '</td>' +
+      '<td style="border:1px solid black;padding:6px;text-align:center;">' + escapeHTML(t.tanggal || '-') + '</td>' +
+      '<td style="border:1px solid black;padding:6px;">' + escapeHTML(t.tujuanLab || '-') + '</td>' +
+      '<td style="border:1px solid black;padding:6px;text-align:center;">' + t.jumlah + ' ' + escapeHTML(b.satuan) + '</td>' +
+      '<td style="border:1px solid black;padding:6px;text-align:center;">' + (t.stok || 0) + '</td>' +
+      '<td style="border:1px solid black;padding:6px;">' + escapeHTML(t.pemohon || '-') + '</td>' +
+      '<td style="border:1px solid black;padding:6px;text-align:center;">' + escapeHTML(t.idRiwayat || '-') + '</td>' +
+      '</tr>';
+  });
+  tbodyPrint.innerHTML = rows;
+
+  document.getElementById('print-tgl-lpb').innerText = 'Samarinda, ' + tglCetak;
+  var ttdNama = localStorage.getItem('lab_farmasi_ttd_nama') || 'Aji Ayattulah Chomaini';
+  var ttdNip = localStorage.getItem('lab_farmasi_ttd_nip') || '199412242025211057';
+  document.getElementById('print-ttd-nama-lpb').innerText = ttdNama;
+  document.getElementById('print-ttd-nip-lpb').innerText = ttdNip;
+
+  var logoImg = document.getElementById('print-logo-img-lpb');
+  var logoPlaceholder = document.getElementById('print-logo-placeholder-lpb');
+  var logoUrl = localStorage.getItem('lab_farmasi_logo');
+  if (logoImg && logoUrl) {
+    logoImg.src = logoUrl;
+    logoImg.style.display = 'block';
+    if (logoPlaceholder) logoPlaceholder.style.display = 'none';
+  } else {
+    if (logoImg) logoImg.style.display = 'none';
+    if (logoPlaceholder) logoPlaceholder.style.display = 'flex';
+  }
+
+  document.getElementById('print-area-lpb').style.display = 'block';
+  window.print();
+  setTimeout(function () {
+    document.getElementById('print-area-lpb').style.display = 'none';
+  }, 500);
+}
+
+function downloadLaporanPerBahanExcel() {
+  if (!lpbSelectedBahan) return;
+  var b = lpbSelectedBahan;
+  var dariVal = document.getElementById('laporan-perbahan-dari').value;
+  var sampaiVal = document.getElementById('laporan-perbahan-sampai').value;
+  var trxList = db.barangKeluar.filter(function (t) { return t.idBahan === b.id; });
+  if (dariVal) trxList = trxList.filter(function (t) { return t.tanggal >= dariVal; });
+  if (sampaiVal) trxList = trxList.filter(function (t) { return t.tanggal <= sampaiVal; });
+  trxList.sort(function (a, c) { return (c.tanggal || '').localeCompare(a.tanggal || ''); });
+
+  var totalKeluar = trxList.reduce(function (s, t) { return s + (parseInt(t.jumlah) || 0); }, 0);
+
+  var labMap = {};
+  trxList.forEach(function (t) {
+    var lab = t.tujuanLab || 'Tidak Diketahui';
+    if (!labMap[lab]) labMap[lab] = 0;
+    labMap[lab] += parseInt(t.jumlah) || 0;
+  });
+
+  var sheetData = [
+    { '': 'LAPORAN PER BAHAN' },
+    { '': '' },
+    { '': 'ID Bahan', ' ': b.id },
+    { '': 'Nama Bahan', ' ': b.namaBahan },
+    { '': 'Satuan', ' ': b.satuan },
+    { '': 'Tahun Kontrak', ' ': b.tahun || '2026' },
+    { '': 'Sisa Stok', ' ': b.stok + ' ' + b.satuan },
+    { '': 'Total Keluar', ' ': totalKeluar + ' ' + b.satuan },
+    { '': 'Periode', ' ': (dariVal || '...') + ' s/d ' + sampaiVal || '...' },
+    { '': '' },
+    { '': 'BREAKDOWN PER LAB' },
+    { 'Lab': 'Total Keluar' }
+  ];
+  Object.keys(labMap).sort(function (a, c) { return labMap[c] - labMap[a]; }).forEach(function (lab) {
+    sheetData.push({ 'Lab': lab, 'Total Keluar': labMap[lab] + ' ' + b.satuan });
+  });
+  sheetData.push({ '': '' });
+  sheetData.push({ '': 'DETAIL TRANSAKSI' });
+  sheetData.push({ 'No': 'Tanggal', 'No ': 'Lab Tujuan', 'No  ': 'Jumlah', 'No   ': 'Sisa Stok', 'No    ': 'Pemohon', 'No     ': 'No. Riwayat' });
+  trxList.forEach(function (t, idx) {
+    sheetData.push({
+      'No': idx + 1,
+      'No ': t.tanggal || '-',
+      'No  ': t.tujuanLab || '-',
+      'No   ': (t.jumlah || 0) + ' ' + b.satuan,
+      'No    ': t.stok || 0,
+      'No     ': t.pemohon || '-',
+      'No      ': t.idRiwayat || '-'
+    });
+  });
+
+  var ws = XLSX.utils.json_to_sheet(sheetData, { header: ['No', 'Tanggal', 'Lab Tujuan', 'Jumlah', 'Sisa Stok', 'Pemohon', 'No. Riwayat', '', '', '', '', '', 'Lab', 'Total Keluar'] });
+  ws = XLSX.utils.json_to_sheet(trxList.map(function (t, idx) {
+    return {
+      'No': idx + 1,
+      'Tanggal': t.tanggal || '-',
+      'Lab Tujuan': t.tujuanLab || '-',
+      'Jumlah': (t.jumlah || 0) + ' ' + b.satuan,
+      'Sisa Stok': t.stok || 0,
+      'Pemohon': t.pemohon || '-',
+      'No. Riwayat': t.idRiwayat || '-'
+    };
+  }));
+  ws['!cols'] = [{ wch: 5 }, { wch: 14 }, { wch: 25 }, { wch: 15 }, { wch: 12 }, { wch: 20 }, { wch: 16 }];
+
+  var wb = XLSX.utils.book_new();
+
+  var summaryData = [
+    { '': 'LAPORAN PER BAHAN' },
+    { '': '' },
+    { 'Field': 'Value', 'Field ': 'Value ' },
+    { 'Field': 'ID Bahan', 'Field ': b.id },
+    { 'Field': 'Nama Bahan', 'Field ': b.namaBahan },
+    { 'Field': 'Satuan', 'Field ': b.satuan },
+    { 'Field': 'Tahun Kontrak', 'Field ': b.tahun || '2026' },
+    { 'Field': 'Sisa Stok', 'Field ': b.stok + ' ' + b.satuan },
+    { 'Field': 'Total Keluar', 'Field ': totalKeluar + ' ' + b.satuan },
+    { '': '' },
+    { 'Lab': 'Total Keluar' }
+  ];
+  Object.keys(labMap).sort(function (a, c) { return labMap[c] - labMap[a]; }).forEach(function (lab) {
+    summaryData.push({ 'Lab': lab, 'Total Keluar': labMap[lab] + ' ' + b.satuan });
+  });
+  var wsSummary = XLSX.utils.json_to_sheet(summaryData, { header: ['', 'Lab', 'Total Keluar', 'Field', 'Field '] });
+  wsSummary['!cols'] = [{ wch: 18 }, { wch: 25 }, { wch: 18 }, { wch: 18 }, { wch: 25 }];
+
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Ringkasan');
+  XLSX.utils.book_append_sheet(wb, ws, 'Detail Transaksi');
+
+  var periodePart = dariVal && sampaiVal ? dariVal + '_s/d_' + sampaiVal : 'Semua';
+  var namaFile = 'Laporan_PerBahan_' + b.id + '_' + periodePart + '.xlsx';
+  XLSX.writeFile(wb, namaFile);
+  Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'File ' + namaFile + ' telah diunduh.', timer: 2000, showConfirmButton: false });
 }
 
 // ==========================================

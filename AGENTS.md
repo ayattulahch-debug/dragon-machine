@@ -75,8 +75,8 @@ Urutan baku setiap permintaan perubahan:
 
 ## 3. STATUS TERAKHIR (update tiap selesai perubahan)
 
-**Tanggal:** 29 Jun 2026
-**Commit terakhir:** `cd85257` — `fix(menu-eksternal): hapus min-h-screen + tambah color picker ikon`
+**Tanggal:** 26 Aug 2026
+**Commit terakhir:** `641b3fa` — `feat(laporan-perbahan): tambah halaman Laporan Per Bahan`
 **Branch:** `main` (sync dengan `origin/main`)
 **Status deploy:** Push terkirim → Railway rebuild ter-trigger. Pantau di dashboard Railway.
 
@@ -93,18 +93,21 @@ Urutan baku setiap permintaan perubahan:
 - [x] Tambah color picker (`input type="color"`) di form admin — setiap ikon bisa punya warna custom sendiri.
 - [x] Hapus `min-h-screen` dari `<main>` — fix layout ruang kosong berlebih di halaman Menu Eksternal.
 - [x] Verifikasi lokal: server boots HTTP 200, login + getAllData + saveSetting OK, tidak ada stderr.
+- [x] Tambah halaman **Laporan Per Bahan** — live search bahan picker, date range filter, breakdown per lab, cetak letterhead, export Excel.
+- [x] Tambah sidebar menu "Laporan Per Bahan" di section Laporan Gudang (semua role).
+- [x] Tambah print area `print-area-lpb` dengan kop surat + tanda tangan (sinkron dengan `terapkanTtd()` & `loadLogo()`).
 
 ### Yang belum / TODO
 - [ ] Update `PROGRESS.md` agar mencerminkan status deploy & fitur terbaru.
 - [ ] Pertimbangkan tambah pola `server/data/` ke `.gitignore` agar WAL tak perlu di-skip manual.
-- [ ] Verifikasi visual Menu Eksternal & layout mobile Quick Actions di deploy Railway.
+- [ ] Verifikasi visual Laporan Per Bahan & layout mobile di deploy Railway.
 - [ ] Regenerasi `public/css/tailwind.css` setiap menambah class Tailwind baru (gunakan `npm run build:css`).
 
 ### Riwayat commit (3 terakhir)
 ```
+641b3fa feat(laporan-perbahan): tambah halaman Laporan Per Bahan dengan live search bahan, date range filter, breakdown per lab, cetak & excel
 cd85257 fix(menu-eksternal): hapus min-h-screen + tambah color picker ikon
 6711384 chore(docs): update AGENTS.md status setelah redesign Menu Eksternal
-581373f refactor(menu-eksternal): redesign dengan Font Awesome + admin section di halaman + hapus dari modal settings
 ```
 
 ---
